@@ -48,11 +48,7 @@ export default function Home() {
         {/* LEFT/CENTER: Sticky 3D Carousel (Expanded to fill the whole left space without text!) */}
         <div className="w-[75%] sticky top-20 h-[calc(100vh-5rem)] flex items-center justify-center z-10 perspective-[1200px] overflow-hidden">
           
-          <div className="absolute top-[20%] z-0 text-center w-full pointer-events-none opacity-[0.03]">
-            <h2 className="text-[6rem] md:text-[10rem] font-serif tracking-tighter leading-none">
-              SPRING 25
-            </h2>
-          </div>
+
 
           <div className="relative w-full h-[85%] flex items-center justify-center">
              {loopedModels.map((model, index) => (

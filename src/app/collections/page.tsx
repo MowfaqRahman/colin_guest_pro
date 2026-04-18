@@ -71,21 +71,21 @@ export default function CollectionsHub() {
       <div className="py-24 px-8 max-w-[1800px] mx-auto">
         <h3 className="text-xs font-bold tracking-[0.3em] uppercase mb-12 opacity-40">Browse Categories</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Link href="/collections/ready-to-wear" className="group">
+          <Link href="/collections/hoodies" className="group">
             <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
-              <Image src="/1_trans.png" alt="Ready To Wear" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
+              <Image src="/1_trans.png" alt="Hoodies" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
-              Ready To Wear <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
+              Hoodies <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
             </div>
           </Link>
 
-          <Link href="/collections/outerwear" className="group">
+          <Link href="/collections/jeans" className="group">
             <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
-              <Image src="/8_trans.png" alt="Outerwear" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
+              <Image src="/8_trans.png" alt="Jeans" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
-              Outerwear <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
+              Jeans <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
             </div>
           </Link>
 
