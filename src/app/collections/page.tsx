@@ -38,10 +38,10 @@ export default function CollectionsHub() {
 
 
       {/* Strict Editorial Split Layout (Offset for Header - Final Typography Refined) */}
-      <section className="relative w-full h-screen bg-white overflow-hidden flex flex-row pt-[80px]">
+      <section className="relative w-full h-screen overflow-hidden flex flex-row pt-[80px] bg-white">
 
         {/* Left Column: Dedicated Typography Zone (30% Width) */}
-        <div className="w-[30%] h-full flex flex-col justify-center px-[6%] z-20 bg-white">
+        <div className="w-[30%] h-full flex flex-col justify-center px-[6%] z-20">
           <h2 className="text-[70px] font-serif leading-[0.9] italic mb-8 text-black tracking-tight">Style,<br />Redefined</h2>
           <div className="space-y-10">
             <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-black/60 leading-relaxed font-sans pr-4">
@@ -77,6 +77,17 @@ export default function CollectionsHub() {
           viewport={{ once: true, margin: "-100px" }}
         >
           <motion.div variants={itemVariants}>
+            <Link href="/collections/all" className="group">
+              <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
+                <Image src="/3_trans.png" alt="All Products" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
+              </div>
+              <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
+                All Products <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
+              </div>
+            </Link>
+          </motion.div>
+
+          <motion.div variants={itemVariants}>
             <Link href="/collections/hoodies" className="group">
               <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
                 <Image src="/1_trans.png" alt="Hoodies" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
@@ -94,17 +105,6 @@ export default function CollectionsHub() {
               </div>
               <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
                 Jeans <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
-              </div>
-            </Link>
-          </motion.div>
-
-          <motion.div variants={itemVariants}>
-            <Link href="/collections/accessories" className="group">
-              <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
-                <Image src="/3_trans.png" alt="Accessories" fill className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" />
-              </div>
-              <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
-                Accessories <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
               </div>
             </Link>
           </motion.div>
