@@ -63,7 +63,7 @@ export function ProductCard({ product, index = 0 }: { product: Product, index?: 
         )}
         
         {/* Link wraps the image so clicking the image goes to PDP, but buttons block propagation */}
-        <Link href={`/product/${product.id}`} className="relative w-full h-full mix-blend-multiply drop-shadow-2xl flex items-center justify-center pt-[15%]">
+        <Link href={`/product/${encodeURIComponent(product.id)}`} className="relative w-full h-full mix-blend-multiply drop-shadow-2xl flex items-center justify-center pt-[15%]">
           <Image 
             src={srcs[imgIndex]}
             alt={product.title}
@@ -83,7 +83,7 @@ export function ProductCard({ product, index = 0 }: { product: Product, index?: 
       </motion.div>
       
       {/* Product Details */}
-      <Link href={`/product/${product.id}`} className="flex justify-between items-end px-2 z-10">
+      <Link href={`/product/${encodeURIComponent(product.id)}`} className="flex justify-between items-end px-2 z-10">
         <div>
           <h4 className="text-xs font-bold tracking-wide mb-1 truncate max-w-[200px] hover:underline cursor-pointer">{product.title}</h4>
           <p className="text-[10px] font-medium tracking-widest text-black/60">{product.price}</p>

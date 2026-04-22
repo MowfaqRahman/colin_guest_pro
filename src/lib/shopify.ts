@@ -1,0 +1,266 @@
+
+const domain = process.env.SHOPIFY_STORE_DOMAIN?.trim();
+const accessToken = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN?.trim();
+
+export async function shopifyFetch({ query, variables }: { query: string; variables?: any }) {
+  if (!domain || !accessToken) {
+    console.error('Shopify Error: SHOPIFY_STORE_DOMAIN or SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in .env.local');
+    return { data: null };
+  }
+
+  try {
+    const response = await fetch(`https://${domain}/api/2024-01/graphql.json`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Shopify-Storefront-Access-Token': accessToken,
+      },
+      body: JSON.stringify({
+        query,
+        variables,
+      }),
+      next: { revalidate: 60 },
+    });
+
+    const result = await response.json();
+    
+    if (result.errors) {
+      const isUnauthorized = result.errors.some((e: any) => e.extensions?.code === 'UNAUTHORIZED');
+      if (isUnauthorized) {
+        console.error('Shopify Authorization Failed: Please verify your SHOPIFY_STOREFRONT_ACCESS_TOKEN and ensure the Storefront API is enabled in your Shopify Admin.');
+      } else {
+        console.error('Shopify API Errors:', JSON.stringify(result.errors, null, 2));
+      }
+    }
+    return result;
+  } catch (error: any) {
+    console.error('Network Error fetching from Shopify:', error.message);
+    return { data: null };
+  }
+}
+
+export async function getCollectionProducts(handle: string) {
+  // First, try fetching by handle
+  const query = `
+    query getCollection($handle: String!) {
+      collection(handle: $handle) {
+        title
+        products(first: 20) {
+          edges {
+            node {
+              id
+              title
+              handle
+              description
+              productType
+              priceRange {
+                minVariantPrice {
+                  amount
+                  currencyCode
+                }
+              }
+              images(first: 5) {
+                edges {
+                  node {
+                    url
+                    altText
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  let response = await shopifyFetch({
+    query,
+    variables: { handle },
+  });
+
+  // If not found, try to find a collection with a matching title
+  if (!response.data?.collection) {
+    console.log(`Collection with handle "${handle}" not found, searching by title...`);
+    const listQuery = `
+      query {
+        collections(first: 50) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+      }
+    `;
+    const listResponse = await shopifyFetch({ query: listQuery });
+    const collections = listResponse.data?.collections?.edges || [];
+    const match = collections.find((edge: any) => 
+      edge.node.title.toLowerCase() === handle.replace(/-/g, ' ').toLowerCase() ||
+      edge.node.handle === handle.toLowerCase().replace(/\s+/g, '-')
+    );
+
+    if (match) {
+      console.log(`Found matching collection: ${match.node.title} (${match.node.handle})`);
+      response = await shopifyFetch({
+        query,
+        variables: { handle: match.node.handle },
+      });
+    }
+  }
+
+  return response.data?.collection?.products?.edges.map((edge: any) => edge.node) || [];
+}
+
+export async function getProductById(id: string) {
+  const query = `
+    query getProduct($id: ID!) {
+      product(id: $id) {
+        id
+        title
+        handle
+        description
+        descriptionHtml
+        productType
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 10) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+        details: metafield(namespace: "custom", key: "details") {
+          value
+        }
+        sizeGuide: metafield(namespace: "custom", key: "size_guide") {
+          value
+        }
+        washcare: metafield(namespace: "custom", key: "washcare") {
+          value
+        }
+        shipping: metafield(namespace: "custom", key: "shipping") {
+          value
+        }
+        variants(first: 20) {
+          edges {
+            node {
+              id
+              title
+              availableForSale
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { id },
+  });
+
+  return response.data?.product;
+}
+
+export async function getAllProducts() {
+  const query = `
+    query getProducts {
+      products(first: 50) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            productType
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 5) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({ query });
+  return response.data?.products?.edges.map((edge: any) => edge.node) || [];
+}
+
+export async function getCollection(handle: string) {
+  const query = `
+    query getCollection($handle: String!) {
+      collection(handle: $handle) {
+        title
+        handle
+        description
+        image {
+          url
+          altText
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { handle },
+  });
+
+  return response.data?.collection;
+}
+
+
+export async function getProductRecommendations(productId: string) {
+  const query = `
+    query getProductRecommendations($productId: ID!) {
+      productRecommendations(productId: $productId) {
+        id
+        title
+        handle
+        description
+        productType
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+        images(first: 5) {
+          edges {
+            node {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { productId },
+  });
+
+  return response.data?.productRecommendations || [];
+}

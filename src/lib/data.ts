@@ -1,11 +1,23 @@
+export type ProductVariant = {
+  id: string;
+  title: string;
+  availableForSale: boolean;
+};
+
 export type Product = {
-  id: number;
+  id: string | number;
   src: string;
   srcs?: string[];
   title: string;
   price: string;
   desc: string;
+  descriptionHtml?: string;
   category: string;
+  details?: string;
+  sizeGuide?: string;
+  washcare?: string;
+  shipping?: string;
+  variants?: ProductVariant[];
 };
 
 export const models: Product[] = [

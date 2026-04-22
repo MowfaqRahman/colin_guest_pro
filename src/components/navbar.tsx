@@ -6,9 +6,16 @@ import { Search, ShoppingBag, Bookmark, User } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { usePathname } from "next/navigation";
 
+import { motion } from "framer-motion";
+
 export function Navbar() {
   const pathname = usePathname();
   const { items, openCart, wishlistItems } = useCartStore();
+
+  const navLinks = [
+    { name: "The Lookbook", href: "/" },
+    { name: "Collections", href: "/collections" },
+  ];
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-[#f9f9fa]/90 backdrop-blur-md border-b border-black/5">
@@ -28,18 +35,28 @@ export function Navbar() {
 
         {/* CENTER: Editorial Navigation */}
         <div className="hidden md:flex justify-center gap-12 text-[10px] tracking-[0.2em] uppercase font-bold">
-          <Link 
-            href="/" 
-            className={`transition-colors hover:text-black ${pathname === '/' ? 'text-black border-b border-black pb-1' : 'text-black/40'}`}
-          >
-            The Lookbook
-          </Link>
-          <Link 
-            href="/collections" 
-            className={`transition-colors hover:text-black ${pathname.startsWith('/collections') ? 'text-black border-b border-black pb-1' : 'text-black/40'}`}
-          >
-            Collections
-          </Link>
+          {navLinks.map((link) => {
+            const isActive = link.href === "/" 
+              ? pathname === "/" 
+              : pathname.startsWith(link.href);
+            
+            return (
+              <Link 
+                key={link.href}
+                href={link.href} 
+                className={`relative py-1 transition-colors hover:text-black ${isActive ? 'text-black' : 'text-black/40'}`}
+              >
+                {link.name}
+                {isActive && (
+                  <motion.div 
+                    layoutId="nav-underline"
+                    className="absolute bottom-0 left-0 right-0 h-[1px] bg-black"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </Link>
+            );
+          })}
         </div>
 
         {/* RIGHT: Constant Icons Cluster */}
