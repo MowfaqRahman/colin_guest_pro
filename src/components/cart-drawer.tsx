@@ -3,10 +3,12 @@
 import { useCartStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { X, ShoppingBag } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { X, ShoppingBag, ArrowRight } from "lucide-react";
 
 export function CartDrawer() {
-  const { items, isOpen, closeCart, removeFromCart, updateQuantity } = useCartStore();
+  const router = useRouter();
+  const { items, isOpen, closeCart, removeFromCart, updateQuantity, isLoggedIn } = useCartStore();
 
   const parsePrice = (priceStr: string) => parseInt(priceStr.replace(/[^0-9]/g, ''));
   // Summing total exactly like a real ecommerce API engine
@@ -95,9 +97,23 @@ export function CartDrawer() {
                {/* Floating Footer Pill */}
                {items.length > 0 && (
                  <div className="absolute bottom-0 inset-x-0 p-5 bg-gradient-to-t from-white via-white to-white/60 pointer-events-none">
-                    <button className="w-full pointer-events-auto bg-black text-white px-6 py-[18px] rounded-[2rem] flex justify-between items-center shadow-lg hover:scale-[1.02] transition-transform">
-                       <span className="text-[13px] font-medium">Check out</span>
-                       <span className="text-[10px] font-bold tracking-wide">{formattedTotal}</span>
+                    <button 
+                      onClick={() => {
+                        if (!isLoggedIn) {
+                          closeCart();
+                          router.push("/login");
+                        } else {
+                          // Handle real checkout
+                          alert("Redirecting to Shopify Checkout...");
+                        }
+                      }}
+                      className="w-full pointer-events-auto bg-black text-white px-6 py-[18px] rounded-[2rem] flex justify-between items-center shadow-lg hover:scale-[1.02] transition-transform"
+                    >
+                       <span className="text-[13px] font-medium">{isLoggedIn ? "Check out" : "Login to Checkout"}</span>
+                       <span className="text-[10px] font-bold tracking-wide flex items-center gap-2">
+                         {formattedTotal}
+                         {!isLoggedIn && <ArrowRight size={14} />}
+                       </span>
                     </button>
                  </div>
                )}

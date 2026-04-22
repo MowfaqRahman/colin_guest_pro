@@ -3,16 +3,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Search, ShoppingBag, Bookmark, User } from "lucide-react";
+import { useState } from "react";
 import { useCartStore } from "@/lib/store";
+import { Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { items, simulateLogin } = useCartStore();
+  const { items, login, isSyncing } = useCartStore();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    simulateLogin(); // Toggles global auth state instantly!
-    router.push("/wishlist"); // Bounces physically back to wishlist to see Phase 7 scaling!
+    setError(null);
+    const result = await login(email, password);
+    if (result.success) {
+      router.push("/wishlist");
+    } else {
+      setError(result.error || "Login failed. Please check your credentials.");
+    }
   };
 
   return (
@@ -50,22 +60,53 @@ export default function LoginPage() {
             <h1 className="text-4xl font-extrabold tracking-tight mb-2">Login</h1>
             <p className="text-sm text-black/50 font-medium mb-10 tracking-wide">Enter your personal details to access your account dashboard.</p>
             
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded text-sm mb-6 font-medium">
+                {error}
+              </div>
+            )}
+            
             <form onSubmit={handleLogin} className="flex flex-col gap-6">
                <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest">Email Address</label>
-                  <input type="email" required placeholder="name@example.com" className="w-full border border-black/20 rounded py-3 px-4 text-sm outline-none focus:border-black transition-colors bg-[#f9f9fa] focus:bg-white" />
+                  <input 
+                    type="email" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com" 
+                    className="w-full border border-black/20 rounded py-3 px-4 text-sm outline-none focus:border-black transition-colors bg-[#f9f9fa] focus:bg-white" 
+                  />
                </div>
                
-               <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest flex justify-between">
                      <span>Password</span>
                      <span className="text-black/40 hover:text-black transition-colors cursor-pointer capitalize font-semibold tracking-normal">Forgot Password?</span>
                   </label>
-                  <input type="password" required placeholder="••••••••" className="w-full border border-black/20 rounded py-3 px-4 text-sm outline-none focus:border-black transition-colors bg-[#f9f9fa] focus:bg-white" />
+                  <input 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••" 
+                    className="w-full border border-black/20 rounded py-3 px-4 text-sm outline-none focus:border-black transition-colors bg-[#f9f9fa] focus:bg-white" 
+                  />
                </div>
 
-               <button type="submit" className="w-full bg-black text-white font-bold py-4 rounded hover:bg-black/80 transition-colors mt-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 duration-300">
-                  Sign In
+               <button 
+                type="submit" 
+                disabled={isSyncing}
+                className="w-full bg-black text-white font-bold py-4 rounded hover:bg-black/80 transition-colors mt-2 shadow-lg hover:shadow-xl hover:-translate-y-0.5 duration-300 flex items-center justify-center gap-2"
+               >
+                  {isSyncing ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Connecting Account...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
                </button>
             </form>
          </div>
@@ -76,9 +117,12 @@ export default function LoginPage() {
             <p className="text-sm text-black/60 font-medium tracking-wide mb-8 leading-relaxed">
                Create an account to speed up your checkout, register warranties, save multiple shipping addresses, and sync your Wishlist globally.
             </p>
-            <button className="w-[200px] border border-black text-black font-bold py-3 rounded hover:bg-black/5 transition-colors">
+            <Link 
+              href="/signup"
+              className="w-[200px] border border-black text-black font-bold py-3 rounded hover:bg-black/5 transition-colors text-center text-sm"
+            >
                Create Account
-            </button>
+            </Link>
          </div>
          
       </div>

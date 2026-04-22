@@ -1,10 +1,10 @@
 
-const domain = process.env.SHOPIFY_STORE_DOMAIN?.trim();
-const accessToken = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN?.trim();
+const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN?.trim();
+const accessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN?.trim();
 
 export async function shopifyFetch({ query, variables }: { query: string; variables?: any }) {
   if (!domain || !accessToken) {
-    console.error('Shopify Error: SHOPIFY_STORE_DOMAIN or SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in .env.local');
+    console.error('Shopify Error: NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN or NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN is not defined in .env.local');
     return { data: null };
   }
 
@@ -263,4 +263,121 @@ export async function getProductRecommendations(productId: string) {
   });
 
   return response.data?.productRecommendations || [];
+}
+
+export async function getProductsByIds(ids: string[]) {
+  const query = `
+    query getProducts($ids: [ID!]!) {
+      nodes(ids: $ids) {
+        ... on Product {
+          id
+          title
+          handle
+          description
+          productType
+          priceRange {
+            minVariantPrice {
+              amount
+              currencyCode
+            }
+          }
+          images(first: 5) {
+            edges {
+              node {
+                url
+                altText
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { ids },
+  });
+
+  return (response.data?.nodes || []).filter((node: any) => node !== null);
+}
+
+export async function customerLogin(email: string, password: string) {
+  const query = `
+    mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+      customerAccessTokenCreate(input: $input) {
+        customerAccessToken {
+          accessToken
+          expiresAt
+        }
+        customerUserErrors {
+          code
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: {
+      input: {
+        email,
+        password,
+      },
+    },
+  });
+
+  return response.data?.customerAccessTokenCreate;
+}
+
+export async function getCustomer(accessToken: string) {
+  const query = `
+    query getCustomer($customerAccessToken: String!) {
+      customer(customerAccessToken: $customerAccessToken) {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: {
+      customerAccessToken: accessToken,
+    },
+  });
+
+  return response.data?.customer;
+}
+
+export async function customerCreate(input: any) {
+  const query = `
+    mutation customerCreate($input: CustomerCreateInput!) {
+      customerCreate(input: $input) {
+        customer {
+          id
+          firstName
+          lastName
+          email
+        }
+        customerUserErrors {
+          code
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { input },
+  });
+
+  return response.data?.customerCreate;
 }

@@ -9,14 +9,12 @@ import { useRouter } from "next/navigation";
 
 export default function WishlistDashboard() {
   const router = useRouter();
-  const { wishlistItems, items, openCart, isLoggedIn, simulateLogin, toggleWishlist } = useCartStore();
+  const { wishlistItems, items, openCart, isLoggedIn, user, logout, toggleWishlist } = useCartStore();
 
-  const parsePrice = (priceStr: string) => parseInt(priceStr.replace(/[^0-9]/g, ''));
-  const totalValue = wishlistItems.reduce((sum, item) => sum + parsePrice(item.price), 0);
-  const formattedTotal = "Rs. " + totalValue.toLocaleString();
+
 
   return (
-    <main className="min-h-screen bg-[#f3f4f6] text-black font-sans relative pb-24">
+    <main className="min-h-screen bg-[#f3f4f6] text-black font-sans relative">
       {/* Navigation Layer */}
       <nav className="w-full bg-white border-b border-black/5 z-50">
         <div className="flex items-center justify-between px-8 py-6">
@@ -28,9 +26,18 @@ export default function WishlistDashboard() {
           </div>
           <div className="flex items-center gap-6 text-xs font-semibold tracking-widest uppercase mb-1">
             <Search size={18} />
-            <Link href="/login" className="cursor-pointer hover:scale-110 transition-transform block">
-              <User size={18} strokeWidth={1.5} />
-            </Link>
+            {isLoggedIn ? (
+              <div className="flex items-center gap-3">
+                <span className="text-[9px] font-bold text-black/40 lowercase max-w-[80px] truncate">{user?.email}</span>
+                <button onClick={logout} className="text-black/40 hover:text-black transition-colors">
+                  <User size={18} strokeWidth={1.5} className="fill-black" />
+                </button>
+              </div>
+            ) : (
+              <Link href="/login" className="cursor-pointer hover:scale-110 transition-transform block">
+                <User size={18} strokeWidth={1.5} />
+              </Link>
+            )}
             <Link href="/wishlist">
               <Bookmark size={18} strokeWidth={1.5} />
             </Link>
@@ -116,35 +123,7 @@ export default function WishlistDashboard() {
         </div>
       )}
 
-      {/* Fixed Sticky Footer dynamically pulling math from the store */}
-      <div className="fixed bottom-0 w-full bg-white border-t border-black/5 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] z-50 flex items-center justify-between px-6 py-4 text-[10px] font-bold tracking-widest leading-none">
-         
-         {/* Left Side Tally Stats */}
-         <div className="flex items-center gap-4">
-           <span className="uppercase text-[11px]">Wishlist</span>
-           <div className="bg-[#f4f4f4] px-4 py-2.5 rounded-full text-black/80 flex items-center gap-2 border border-black/5">
-             <span className="text-black/40">Product count :</span> <span>{wishlistItems.length}</span>
-           </div>
-           <div className="bg-[#f4f4f4] px-4 py-2.5 rounded-full text-black/80 flex items-center gap-2 border border-black/5">
-             <span className="text-black/40">In stock :</span> <span>{wishlistItems.length}</span>
-           </div>
-         </div>
 
-         {/* Right Side Action Tally */}
-         <div className="flex items-center gap-4">
-           <div className="bg-[#f4f4f4] px-4 py-2.5 rounded-full text-black/80 flex items-center gap-2 border border-black/5">
-             <span className="text-black/40">Selected count :</span> <span>0</span>
-           </div>
-           <div className="bg-[#f4f4f4] px-4 py-2.5 rounded-full text-black/80 flex items-center gap-2 border border-black/5">
-             <span className="text-black/40">Total Value :</span> <span>{formattedTotal}</span>
-           </div>
-           
-           <button className="bg-[#1f1f1f] text-white px-8 py-3 rounded-full hover:bg-black transition-colors shadow-lg">
-             Proceed to Checkout
-           </button>
-         </div>
-
-      </div>
     </main>
   );
 }

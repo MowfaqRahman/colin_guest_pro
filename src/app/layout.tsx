@@ -5,6 +5,7 @@ import { CartDrawer } from "@/components/cart-drawer";
 import { WishlistPopup } from "@/components/wishlist-popup";
 import { Navbar } from "@/components/navbar";
 import { SmoothScroll } from "@/components/smooth-scroll";
+import { SyncManager } from "@/components/sync-manager";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
         </SmoothScroll>
         <CartDrawer />
         <WishlistPopup />
+        <SyncManager />
       </body>
     </html>
   );

@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 
 export function Navbar() {
   const pathname = usePathname();
-  const { items, openCart, wishlistItems } = useCartStore();
+  const { items, openCart, wishlistItems, isLoggedIn, user, logout } = useCartStore();
 
   const navLinks = [
     { name: "The Lookbook", href: "/" },
@@ -63,9 +63,18 @@ export function Navbar() {
         <div className="flex items-center justify-end gap-6 text-xs font-semibold tracking-widest uppercase">
           <Search size={18} className="cursor-pointer text-black/40 hover:text-black transition-colors" />
           
-          <Link href="/login" className="cursor-pointer block text-black/40 hover:text-black transition-colors">
-            <User size={18} strokeWidth={1.5} />
-          </Link>
+          {isLoggedIn ? (
+            <div className="flex items-center gap-3">
+              <span className="text-[9px] font-bold text-black/40 lowercase max-w-[80px] truncate">{user?.email}</span>
+              <button onClick={logout} className="text-black/40 hover:text-black transition-colors">
+                <User size={18} strokeWidth={1.5} className="fill-black" />
+              </button>
+            </div>
+          ) : (
+            <Link href="/login" className="cursor-pointer block text-black/40 hover:text-black transition-colors">
+              <User size={18} strokeWidth={1.5} />
+            </Link>
+          )}
 
           <Link href="/wishlist" className="cursor-pointer block relative text-black/40 hover:text-black transition-colors">
             <Bookmark size={18} strokeWidth={1.5} />
