@@ -21,7 +21,7 @@ export default function ProductClient({ product, suggestedProducts }: ProductCli
   const [activeTab, setActiveTab] = useState<string>("Details & Description");
 
   const { openCart, addToCart, wishlistItems, toggleWishlist } = useCartStore();
-  const isWishlisted = wishlistItems.some(item => item.id === product.id);
+  const isWishlisted = wishlistItems.some((item: Product) => item.id === product.id);
 
   // If we only have 1 image, duplicate it twice so the scrolling feature still functions visually.
   const displayImages = product.srcs && product.srcs.length > 1 ? product.srcs : [product.src, product.src, product.src];

@@ -12,7 +12,7 @@ export function ProductCard({ product, index = 0 }: { product: Product, index?: 
   const [imgIndex, setImgIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const { wishlistItems, toggleWishlist } = useCartStore();
-  const isWishlisted = wishlistItems.some((item) => item.id === product.id);
+  const isWishlisted = wishlistItems.some((item: Product) => item.id === product.id);
 
   // We ensure there are multiple images for prototyping tracking
   const srcs = product.srcs && product.srcs.length > 1 ? product.srcs : [product.src, product.src, product.src];

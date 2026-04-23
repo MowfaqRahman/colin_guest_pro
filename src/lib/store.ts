@@ -145,7 +145,7 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      signup: async (input) => {
+      signup: async (input): Promise<{ success: boolean; error?: string }> => {
         set({ isSyncing: true });
         try {
           const result = await customerCreate(input);
@@ -261,7 +261,7 @@ export const useCartStore = create<CartState>()(
 
               // Merge wishlist (unique by id)
               const mergedWishlist = [...newWishlistItems];
-              guestWishlist.forEach(item => {
+              guestWishlist.forEach((item: Product) => {
                 if (!mergedWishlist.find(mw => mw.id === item.id)) {
                   mergedWishlist.push(item);
                 }
@@ -269,7 +269,7 @@ export const useCartStore = create<CartState>()(
 
               // Merge cart (unique by product.id and size)
               const mergedCart = [...newCartItems];
-              guestCart.forEach(item => {
+              guestCart.forEach((item: CartItem) => {
                 const exists = mergedCart.find(mc => mc.product.id === item.product.id && mc.size === item.size);
                 if (exists) {
                   exists.quantity += item.quantity;
@@ -305,8 +305,8 @@ export const useCartStore = create<CartState>()(
         if (!isLoggedIn || !customerId) return;
 
         try {
-          const wishlist = wishlistItems.map(item => item.id);
-          const cart = items.map(item => ({
+          const wishlist = wishlistItems.map((item: Product) => item.id);
+          const cart = items.map((item: CartItem) => ({
             productId: item.product.id,
             size: item.size,
             quantity: item.quantity
