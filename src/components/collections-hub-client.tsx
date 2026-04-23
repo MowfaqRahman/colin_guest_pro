@@ -70,12 +70,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
       >
         <motion.div variants={itemVariants}>
           <Link href="/collections/all" className="group">
-            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
               <Image 
                 src={allImage || ""} 
                 alt="All Products" 
                 fill 
-                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
@@ -86,12 +86,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
 
         <motion.div variants={itemVariants}>
           <Link href="/collections/hoodies" className="group">
-            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
               <Image 
                 src={hoodieImage || ""} 
                 alt="Hoodies" 
                 fill 
-                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
@@ -102,12 +102,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
 
         <motion.div variants={itemVariants}>
           <Link href="/collections/jeans" className="group">
-            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
               <Image 
                 src={jeansImage || ""} 
                 alt="Jeans" 
                 fill 
-                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
