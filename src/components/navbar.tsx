@@ -2,15 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, ShoppingBag, Bookmark, User } from "lucide-react";
+import { Search, ShoppingBag, Bookmark, User, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 import { motion } from "framer-motion";
 
 export function Navbar() {
   const pathname = usePathname();
   const { items, openCart, wishlistItems, isLoggedIn, user, logout } = useCartStore();
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
   const navLinks = [
     { name: "The Lookbook", href: "/" },
@@ -75,11 +77,47 @@ export function Navbar() {
           <Search size={18} className={`cursor-pointer transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`} />
           
           {isLoggedIn ? (
-            <div className="flex items-center gap-3">
-              <span className={`text-[9px] font-bold lowercase max-w-[80px] truncate ${isAboutPage ? "text-white/50" : "text-black/40"}`}>{user?.email}</span>
-              <button onClick={logout} className={`transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}>
+            <div className="relative">
+              <button 
+                onClick={() => setIsAccountOpen(!isAccountOpen)}
+                className={`flex items-center gap-1 transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}
+              >
                 <User size={18} strokeWidth={1.5} className={isAboutPage ? "fill-white" : "fill-black"} />
+                <ChevronDown size={12} className={`transition-transform duration-300 ${isAccountOpen ? "rotate-180" : ""}`} />
               </button>
+
+              {isAccountOpen && (
+                <>
+                  {/* Backdrop for closing */}
+                  <div className="fixed inset-0 z-[-1]" onClick={() => setIsAccountOpen(false)} />
+                  
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    className={`absolute right-0 mt-4 w-48 py-2 rounded-lg shadow-2xl border backdrop-blur-xl z-[100] ${
+                      isAboutPage 
+                      ? "bg-black/80 border-white/10 text-white" 
+                      : "bg-white/80 border-black/5 text-black"
+                    }`}
+                  >
+                    <div className="px-4 py-2 border-b border-white/10 mb-1">
+                      <p className="text-[9px] font-bold uppercase tracking-widest opacity-50">Account</p>
+                    </div>
+                    <Link href="/profile" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Profile</Link>
+                    <Link href="/orders" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Orders</Link>
+                    <div className="h-[1px] bg-black/5 my-1" />
+                    <button 
+                      onClick={() => {
+                        logout();
+                        setIsAccountOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-red-50 hover:text-red-600 transition-colors tracking-widest uppercase"
+                    >
+                      Logout
+                    </button>
+                  </motion.div>
+                </>
+              )}
             </div>
           ) : (
             <Link href="/login" className={`cursor-pointer block transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}>

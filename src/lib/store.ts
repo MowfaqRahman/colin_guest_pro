@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type Product } from './data';
-import { customerLogin, getCustomer, getProductsByIds, customerCreate } from './shopify';
+import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover } from './shopify';
+import { signOut } from 'next-auth/react';
 
 export type CartItem = {
   product: Product;
@@ -32,17 +33,19 @@ interface CartState {
   isSyncing: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (input: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
+  recoverPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   syncData: (merge?: boolean) => Promise<void>;
   saveData: () => Promise<void>;
 
   wishlistPopupProduct: Product | null;
   clearWishlistPopup: () => void;
+  hasLoggedOut: boolean;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       isOpen: false,
       openCart: () => set({ isOpen: true, isWishlistOpen: false }), // automatically close wishlist if cart opens safely
@@ -61,13 +64,13 @@ export const useCartStore = create<CartState>()(
             isWishlistOpen: false
           };
         });
-        useCartStore.getState().saveData();
+        get().saveData();
       },
       removeFromCart: (cartItemId) => {
         set((state) => ({
           items: state.items.filter(item => item.id !== cartItemId)
         }));
-        useCartStore.getState().saveData();
+        get().saveData();
       },
       updateQuantity: (cartItemId, delta) => {
         set((state) => ({
@@ -79,7 +82,7 @@ export const useCartStore = create<CartState>()(
             return item;
           })
         }));
-        useCartStore.getState().saveData();
+        get().saveData();
       },
 
       wishlistItems: [],
@@ -98,7 +101,7 @@ export const useCartStore = create<CartState>()(
             };
           }
         });
-        useCartStore.getState().saveData();
+        get().saveData();
       },
 
       isLoggedIn: false,
@@ -125,16 +128,17 @@ export const useCartStore = create<CartState>()(
                   lastName: customer.lastName
                 },
                 customerId: customer.id,
-                accessToken: token
+                accessToken: token,
+                hasLoggedOut: false
               });
 
               // Fetch saved data from Shopify and merge with guest data
-              await useCartStore.getState().syncData(true);
+              await get().syncData(true);
               return { success: true };
             }
           }
 
-          set({ isSyncing: false });
+          set({ isSyncing: false, hasLoggedOut: false });
           return {
             success: false,
             error: result?.customerUserErrors?.[0]?.message || "Invalid login credentials"
@@ -152,7 +156,7 @@ export const useCartStore = create<CartState>()(
 
           if (result?.customer) {
             // After successful signup, log the user in automatically
-            const loginResult = await useCartStore.getState().login(input.email, input.password);
+            const loginResult = await get().login(input.email, input.password);
             set({ isSyncing: false });
             return loginResult;
           }
@@ -168,17 +172,46 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      logout: () => set({
-        isLoggedIn: false,
-        user: null,
-        customerId: null,
-        accessToken: null,
-        items: [],
-        wishlistItems: []
-      }),
+      recoverPassword: async (email) => {
+        set({ isSyncing: true });
+        try {
+          const result = await customerRecover(email);
+          set({ isSyncing: false });
+
+          if (result?.customerUserErrors?.length > 0) {
+            return {
+              success: false,
+              error: result.customerUserErrors[0].message
+            };
+          }
+
+          return { success: true };
+        } catch (error) {
+          set({ isSyncing: false });
+          return { success: false, error: "An unexpected error occurred" };
+        }
+      },
+
+      logout: () => {
+        // 1. Clear local store state IMMEDIATELY for instant UI feedback
+        set({
+          isLoggedIn: false,
+          user: null,
+          customerId: null,
+          accessToken: null,
+          items: [],
+          wishlistItems: [],
+          hasLoggedOut: true
+        });
+
+        // 2. Sign out of Google/NextAuth session in the background
+        signOut({ redirect: false });
+        
+        // 3. Clear the account dropdown state if open (handled in Navbar component usually)
+      },
 
       syncData: async (merge?: boolean) => {
-        const { customerId, isLoggedIn } = useCartStore.getState();
+        const { customerId, isLoggedIn } = get();
         if (!isLoggedIn || !customerId) return;
 
         set({ isSyncing: true });
@@ -256,8 +289,8 @@ export const useCartStore = create<CartState>()(
 
             if (merge) {
               // Merge logic: Combine guest items with account items
-              const guestWishlist = useCartStore.getState().wishlistItems;
-              const guestCart = useCartStore.getState().items;
+              const guestWishlist = get().wishlistItems;
+              const guestCart = get().items;
 
               // Merge wishlist (unique by id)
               const mergedWishlist = [...newWishlistItems];
@@ -285,7 +318,7 @@ export const useCartStore = create<CartState>()(
               });
 
               // Save the merged state back to Shopify
-              await useCartStore.getState().saveData();
+              await get().saveData();
             } else {
               set({
                 wishlistItems: newWishlistItems,
@@ -301,7 +334,7 @@ export const useCartStore = create<CartState>()(
       },
 
       saveData: async () => {
-        const { customerId, isLoggedIn, wishlistItems, items } = useCartStore.getState();
+        const { customerId, isLoggedIn, wishlistItems, items } = get();
         if (!isLoggedIn || !customerId) return;
 
         try {
@@ -323,7 +356,8 @@ export const useCartStore = create<CartState>()(
       },
 
       wishlistPopupProduct: null,
-      clearWishlistPopup: () => set({ wishlistPopupProduct: null })
+      clearWishlistPopup: () => set({ wishlistPopupProduct: null }),
+      hasLoggedOut: false
     }),
     {
       name: 'bluorng-storage',
