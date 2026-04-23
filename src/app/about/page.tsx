@@ -25,14 +25,14 @@ export default function AboutPage() {
   const videoScale = useTransform(smoothProgress, [0, 1], [1, 1.05]);
   const videoBlur = useTransform(smoothProgress, [0, 0.5], ["blur(0px)", "blur(2px)"]);
 
-  // TEXT ANIMATIONS: Editorial Cross-Fade (Baton Pass)
-  // Step 1: COLIN GUEST drifts up elegantly (0% to 50% scroll)
-  const titleY = useTransform(smoothProgress, [0, 0.5], [0, -80]);
-  const titleOpacity = useTransform(smoothProgress, [0, 0.4], [0.85, 0]);
+  // TEXT ANIMATIONS: Tight simultaneous cross-fade — one decisive glide
+  // Step 1: COLIN GUEST fades out quickly in a tight band
+  const titleY = useTransform(smoothProgress, [0, 0.4], [0, -60]);
+  const titleOpacity = useTransform(smoothProgress, [0.1, 0.35], [0.85, 0]);
 
-  // Step 2: ARCHITECTURAL INTEGRITY rises to meet it as it fades (begins at 15%)
-  const contentY = useTransform(smoothProgress, [0.10, 0.6], ["60vh", "0vh"]);
-  const contentOpacity = useTransform(smoothProgress, [0.2, 0.6], [0, 1]);
+  // Step 2: Content rises in sync — starts close (25vh) and lands exactly as title exits
+  const contentY = useTransform(smoothProgress, [0.15, 0.45], ["25vh", "0vh"]);
+  const contentOpacity = useTransform(smoothProgress, [0.15, 0.45], [0, 1]);
 
   return (
     <motion.div 

@@ -9,8 +9,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // ONLY activate smooth scroll on pages that ARE NOT the landing page
-    // This prevents interference with the landing page's custom SNAP physics
+    // Disable Lenis on the landing page to prevent conflict with snap physics
     if (pathname === "/") {
       if (lenisRef.current) {
         lenisRef.current.destroy();
@@ -19,15 +18,16 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Initialize Lenis
+    // Initialize Lenis with 'Liquid Silk' physics
     const lenis = new Lenis({
-      duration: 1.2,
+      duration: 1.5,
+      lerp: 0.05, // Heavy, buttery lerp
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 2,
+      wheelMultiplier: 0.8, // Slightly more controlled
+      touchMultiplier: 1.5,
     });
 
     lenisRef.current = lenis;

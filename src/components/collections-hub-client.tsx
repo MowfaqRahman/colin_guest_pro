@@ -16,25 +16,25 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.3
       }
     }
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 40 },
+    hidden: { opacity: 0, y: 60 },
     visible: { 
       opacity: 1, 
       y: 0,
       transition: {
-        duration: 0.8,
-        ease: "easeOut"
+        duration: 1.5,
+        ease: [0.22, 1, 0.36, 1] // Silky smooth exponential out
       } as any
     }
   };
 
   return (
-    <div className="py-24 px-8 max-w-[1800px] mx-auto">
+    <div id="categories" className="py-12 px-8 max-w-[1800px] mx-auto">
       <h3 className="text-xs font-bold tracking-[0.3em] uppercase mb-12 opacity-40">Browse Categories</h3>
       <motion.div 
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -45,12 +45,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
       >
         <motion.div variants={itemVariants}>
           <Link href="/collections/all" className="group">
-            <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
                 src={allImage || "/3_trans.png"} 
                 alt="All Products" 
                 fill 
-                className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
@@ -61,12 +61,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
 
         <motion.div variants={itemVariants}>
           <Link href="/collections/hoodies" className="group">
-            <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
                 src={hoodieImage || "/1_trans.png"} 
                 alt="Hoodies" 
                 fill 
-                className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
@@ -77,12 +77,12 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
 
         <motion.div variants={itemVariants}>
           <Link href="/collections/jeans" className="group">
-            <div className="relative w-full aspect-[4/5] bg-[#f8f8f8] overflow-hidden">
+            <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
                 src={jeansImage || "/8_trans.png"} 
                 alt="Jeans" 
                 fill 
-                className="object-contain p-16 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
               />
             </div>
             <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">

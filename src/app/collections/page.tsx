@@ -2,6 +2,9 @@ import { getCollection } from "@/lib/shopify";
 import { CollectionsHubClient } from "@/components/collections-hub-client";
 import Image from "next/image";
 
+// Small client component just for the scroll button
+import ExploreButton from "@/components/explore-button";
+
 export default async function CollectionsHub() {
   // Fetch collection details for images
   const hoodieCollection = await getCollection("hoodie");
@@ -18,9 +21,7 @@ export default async function CollectionsHub() {
             <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-black/60 leading-relaxed font-sans pr-4">
               Uncomplicated, Essential Pieces<br />You'll Reach For Again And Again.
             </p>
-            <button className="w-fit px-12 py-4 border border-black text-black text-[10px] font-bold uppercase tracking-[0.5em] hover:bg-black hover:text-white transition-all duration-300">
-              Explore Collection
-            </button>
+            <ExploreButton />
           </div>
         </div>
 
