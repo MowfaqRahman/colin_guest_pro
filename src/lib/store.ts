@@ -45,7 +45,7 @@ interface CartState {
 
 export const useCartStore = create<CartState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       items: [],
       isOpen: false,
       openCart: () => set({ isOpen: true, isWishlistOpen: false }), // automatically close wishlist if cart opens safely
@@ -64,13 +64,13 @@ export const useCartStore = create<CartState>()(
             isWishlistOpen: false
           };
         });
-        useCartStore.getState().saveData();
+        get().saveData();
       },
       removeFromCart: (cartItemId) => {
         set((state) => ({
           items: state.items.filter(item => item.id !== cartItemId)
         }));
-        useCartStore.getState().saveData();
+        get().saveData();
       },
       updateQuantity: (cartItemId, delta) => {
         set((state) => ({
@@ -82,7 +82,7 @@ export const useCartStore = create<CartState>()(
             return item;
           })
         }));
-        useCartStore.getState().saveData();
+        get().saveData();
       },
 
       wishlistItems: [],
@@ -101,7 +101,7 @@ export const useCartStore = create<CartState>()(
             };
           }
         });
-        useCartStore.getState().saveData();
+        get().saveData();
       },
 
       isLoggedIn: false,
@@ -133,7 +133,7 @@ export const useCartStore = create<CartState>()(
               });
 
               // Fetch saved data from Shopify and merge with guest data
-              await useCartStore.getState().syncData(true);
+              await get().syncData(true);
               return { success: true };
             }
           }
@@ -156,7 +156,7 @@ export const useCartStore = create<CartState>()(
 
           if (result?.customer) {
             // After successful signup, log the user in automatically
-            const loginResult = await useCartStore.getState().login(input.email, input.password);
+            const loginResult = await get().login(input.email, input.password);
             set({ isSyncing: false });
             return loginResult;
           }
@@ -211,7 +211,7 @@ export const useCartStore = create<CartState>()(
       },
 
       syncData: async (merge?: boolean) => {
-        const { customerId, isLoggedIn } = useCartStore.getState();
+        const { customerId, isLoggedIn } = get();
         if (!isLoggedIn || !customerId) return;
 
         set({ isSyncing: true });
@@ -289,8 +289,8 @@ export const useCartStore = create<CartState>()(
 
             if (merge) {
               // Merge logic: Combine guest items with account items
-              const guestWishlist = useCartStore.getState().wishlistItems;
-              const guestCart = useCartStore.getState().items;
+              const guestWishlist = get().wishlistItems;
+              const guestCart = get().items;
 
               // Merge wishlist (unique by id)
               const mergedWishlist = [...newWishlistItems];
@@ -318,7 +318,7 @@ export const useCartStore = create<CartState>()(
               });
 
               // Save the merged state back to Shopify
-              await useCartStore.getState().saveData();
+              await get().saveData();
             } else {
               set({
                 wishlistItems: newWishlistItems,
@@ -334,7 +334,7 @@ export const useCartStore = create<CartState>()(
       },
 
       saveData: async () => {
-        const { customerId, isLoggedIn, wishlistItems, items } = useCartStore.getState();
+        const { customerId, isLoggedIn, wishlistItems, items } = get();
         if (!isLoggedIn || !customerId) return;
 
         try {
