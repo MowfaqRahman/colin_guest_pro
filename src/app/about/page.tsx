@@ -12,11 +12,11 @@ export default function AboutPage() {
     offset: ["start start", "end end"]
   });
 
-  // "Liquid Silk" physics: Heavy mass and high damping to absorb fast scrolls
+  // "Liquid Silk" physics: Snappy enough to recover quickly on scroll-up
   const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 20,
-    damping: 40,
-    mass: 2,
+    stiffness: 80,
+    damping: 20,
+    mass: 0.5,
     restDelta: 0.001
   });
 
