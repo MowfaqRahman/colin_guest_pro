@@ -30,7 +30,7 @@ export default function SignupPage() {
     setError(null);
     const result = await signup(formData);
     if (result.success) {
-      router.push("/wishlist");
+      router.push("/");
     } else {
       setError(result.error || "Failed to create account. Please try again.");
     }

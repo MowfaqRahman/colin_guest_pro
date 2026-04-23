@@ -384,3 +384,24 @@ export async function customerCreate(input: any) {
 
   return response.data?.customerCreate;
 }
+
+export async function customerRecover(email: string) {
+  const query = `
+    mutation customerRecover($email: String!) {
+      customerRecover(email: $email) {
+        customerUserErrors {
+          code
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { email },
+  });
+
+  return response.data?.customerRecover;
+}

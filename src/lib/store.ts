@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type Product } from './data';
-import { customerLogin, getCustomer, getProductsByIds, customerCreate } from './shopify';
+import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover } from './shopify';
+import { signOut } from 'next-auth/react';
 
 export type CartItem = {
   product: Product;
@@ -32,12 +33,14 @@ interface CartState {
   isSyncing: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   signup: (input: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
+  recoverPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   syncData: (merge?: boolean) => Promise<void>;
   saveData: () => Promise<void>;
 
   wishlistPopupProduct: Product | null;
   clearWishlistPopup: () => void;
+  hasLoggedOut: boolean;
 }
 
 export const useCartStore = create<CartState>()(
@@ -125,7 +128,8 @@ export const useCartStore = create<CartState>()(
                   lastName: customer.lastName
                 },
                 customerId: customer.id,
-                accessToken: token
+                accessToken: token,
+                hasLoggedOut: false
               });
 
               // Fetch saved data from Shopify and merge with guest data
@@ -134,7 +138,7 @@ export const useCartStore = create<CartState>()(
             }
           }
 
-          set({ isSyncing: false });
+          set({ isSyncing: false, hasLoggedOut: false });
           return {
             success: false,
             error: result?.customerUserErrors?.[0]?.message || "Invalid login credentials"
@@ -168,14 +172,43 @@ export const useCartStore = create<CartState>()(
         }
       },
 
-      logout: () => set({
-        isLoggedIn: false,
-        user: null,
-        customerId: null,
-        accessToken: null,
-        items: [],
-        wishlistItems: []
-      }),
+      recoverPassword: async (email) => {
+        set({ isSyncing: true });
+        try {
+          const result = await customerRecover(email);
+          set({ isSyncing: false });
+
+          if (result?.customerUserErrors?.length > 0) {
+            return {
+              success: false,
+              error: result.customerUserErrors[0].message
+            };
+          }
+
+          return { success: true };
+        } catch (error) {
+          set({ isSyncing: false });
+          return { success: false, error: "An unexpected error occurred" };
+        }
+      },
+
+      logout: () => {
+        // 1. Clear local store state IMMEDIATELY for instant UI feedback
+        set({
+          isLoggedIn: false,
+          user: null,
+          customerId: null,
+          accessToken: null,
+          items: [],
+          wishlistItems: [],
+          hasLoggedOut: true
+        });
+
+        // 2. Sign out of Google/NextAuth session in the background
+        signOut({ redirect: false });
+        
+        // 3. Clear the account dropdown state if open (handled in Navbar component usually)
+      },
 
       syncData: async (merge?: boolean) => {
         const { customerId, isLoggedIn } = useCartStore.getState();
@@ -323,7 +356,8 @@ export const useCartStore = create<CartState>()(
       },
 
       wishlistPopupProduct: null,
-      clearWishlistPopup: () => set({ wishlistPopupProduct: null })
+      clearWishlistPopup: () => set({ wishlistPopupProduct: null }),
+      hasLoggedOut: false
     }),
     {
       name: 'bluorng-storage',

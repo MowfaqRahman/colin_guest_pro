@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
-// Local database file path - using root for stability
-const DB_PATH = path.join(process.cwd(), 'sync-db.json');
+// Move DB to temp folder to prevent Next.js rebuild loops in development
+const DB_PATH = path.join(os.tmpdir(), 'colin-guest-sync-db.json');
 
 // Helper to read DB
 function readDB() {
