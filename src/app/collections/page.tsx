@@ -7,9 +7,10 @@ export default async function CollectionsHub() {
   // Fetch collection details for images
   const hoodieCollection = await getCollection("hoodie");
   const jeansCollection = await getCollection("jeans");
-  const allProducts = await getCollectionProducts("Landing Page"); // Or use getAllProducts()
+  const allCollection = await getCollection("Landing Page"); 
   
-  const allImage = allProducts[0]?.images.edges[0]?.node.url;
+  // Best Idea: Use the Collection's own "Featured Image" from Shopify Admin
+  const allImage = allCollection?.image?.url;
 
   return (
     <main className="min-h-screen bg-white text-black font-sans relative overflow-x-hidden">

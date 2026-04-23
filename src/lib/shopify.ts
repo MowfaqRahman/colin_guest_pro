@@ -224,10 +224,40 @@ export async function getCollection(handle: string) {
     }
   `;
 
-  const response = await shopifyFetch({
+  let response = await shopifyFetch({
     query,
     variables: { handle },
   });
+
+  // If not found by handle, try to find by Title match
+  if (!response.data?.collection) {
+    const listQuery = `
+      query {
+        collections(first: 50) {
+          edges {
+            node {
+              id
+              title
+              handle
+            }
+          }
+        }
+      }
+    `;
+    const listResponse = await shopifyFetch({ query: listQuery });
+    const collections = listResponse.data?.collections?.edges || [];
+    const match = collections.find((edge: any) => 
+      edge.node.title.toLowerCase() === handle.replace(/-/g, ' ').toLowerCase() ||
+      edge.node.handle === handle.toLowerCase().replace(/\s+/g, '-')
+    );
+
+    if (match) {
+      response = await shopifyFetch({
+        query,
+        variables: { handle: match.node.handle },
+      });
+    }
+  }
 
   return response.data?.collection;
 }
