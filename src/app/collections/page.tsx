@@ -1,14 +1,15 @@
-import { getCollection } from "@/lib/shopify";
+import { getCollection, getCollectionProducts } from "@/lib/shopify";
 import { CollectionsHubClient } from "@/components/collections-hub-client";
 import Image from "next/image";
-
-// Small client component just for the scroll button
 import ExploreButton from "@/components/explore-button";
 
 export default async function CollectionsHub() {
   // Fetch collection details for images
   const hoodieCollection = await getCollection("hoodie");
   const jeansCollection = await getCollection("jeans");
+  const allProducts = await getCollectionProducts("Landing Page"); // Or use getAllProducts()
+  
+  const allImage = allProducts[0]?.images.edges[0]?.node.url;
 
   return (
     <main className="min-h-screen bg-white text-black font-sans relative overflow-x-hidden">
@@ -42,6 +43,7 @@ export default async function CollectionsHub() {
       <CollectionsHubClient 
         hoodieImage={hoodieCollection?.image?.url} 
         jeansImage={jeansCollection?.image?.url}
+        allImage={allImage}
       />
     </main>
   );

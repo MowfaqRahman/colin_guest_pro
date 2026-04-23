@@ -72,7 +72,7 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
           <Link href="/collections/all" className="group">
             <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
-                src={allImage || "/3_trans.png"} 
+                src={allImage || ""} 
                 alt="All Products" 
                 fill 
                 className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
@@ -88,7 +88,7 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
           <Link href="/collections/hoodies" className="group">
             <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
-                src={hoodieImage || "/1_trans.png"} 
+                src={hoodieImage || ""} 
                 alt="Hoodies" 
                 fill 
                 className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
@@ -104,7 +104,7 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
           <Link href="/collections/jeans" className="group">
             <div className="relative w-full aspect-square bg-[#f8f8f8] overflow-hidden">
               <Image 
-                src={jeansImage || "/8_trans.png"} 
+                src={jeansImage || ""} 
                 alt="Jeans" 
                 fill 
                 className="object-contain p-10 mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
