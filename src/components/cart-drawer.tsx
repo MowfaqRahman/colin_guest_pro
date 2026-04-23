@@ -54,7 +54,7 @@ export function CartDrawer() {
                        <p className="font-bold tracking-widest text-[10px] uppercase text-black/40">Your bag is empty.</p>
                     </div>
                   ) : (
-                    items.map((item: CartItem, index) => (
+                    items.map((item: CartItem, index: number) => (
                       <div key={item.id} className="flex gap-4 mb-6 group">
                          {/* Product Image Square (Tightened sizing) */}
                          <div className="relative w-[72px] h-[72px] rounded-lg bg-gradient-to-br from-[#161616] to-[#252525] overflow-hidden shrink-0 border border-black/10 shadow-sm">
