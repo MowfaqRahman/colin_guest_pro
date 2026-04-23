@@ -1,8 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, animate } from "framer-motion";
 
 interface CollectionsHubClientProps {
   hoodieImage?: string;
@@ -11,6 +12,30 @@ interface CollectionsHubClientProps {
 }
 
 export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: CollectionsHubClientProps) {
+  useEffect(() => {
+    // If arriving with #categories hash, perform buttery scroll 
+    if (window.location.hash === "#categories") {
+      // 1. Immediately prevent the browser's native jump by forcing top
+      window.scrollTo(0, 0);
+      
+      const timer = setTimeout(() => {
+        const target = document.getElementById("categories");
+        if (target) {
+          const targetPosition = target.getBoundingClientRect().top + window.scrollY;
+          
+          // 2. Clean URL so refresh doesn't trigger it again
+          window.history.replaceState(null, "", window.location.pathname);
+
+          animate(window.scrollY, targetPosition, {
+            duration: 1.8,
+            ease: [0.33, 1, 0.68, 1],
+            onUpdate: (latest) => window.scrollTo(0, latest),
+          });
+        }
+      }, 100); // Shorter delay for instant response
+      return () => clearTimeout(timer);
+    }
+  }, []);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {

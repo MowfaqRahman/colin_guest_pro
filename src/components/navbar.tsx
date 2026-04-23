@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Search, ShoppingBag, Bookmark, User, ChevronDown } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { motion } from "framer-motion";
 
@@ -13,6 +13,13 @@ export function Navbar() {
   const pathname = usePathname();
   const { items, openCart, wishlistItems, isLoggedIn, user, logout } = useCartStore();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
     { name: "The Lookbook", href: "/" },
@@ -21,13 +28,21 @@ export function Navbar() {
   ];
 
   const isAboutPage = pathname === "/about";
+  const isCollectionsPage = pathname === "/collections";
+
+  // Liquid Logic: Transparent at top, frosted on scroll
+  const getNavStyles = () => {
+    if (isAboutPage) return "bg-transparent border-none";
+    if (isCollectionsPage) {
+      return scrolled 
+        ? "bg-white/40 backdrop-blur-2xl shadow-sm" 
+        : "bg-transparent border-none";
+    }
+    return "bg-[#f9f9fa]/90 backdrop-blur-md border-b border-black/5";
+  };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${
-      isAboutPage 
-      ? "bg-transparent border-none" 
-      : "bg-[#f9f9fa]/90 backdrop-blur-md border-b border-black/5"
-    }`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ease-out ${getNavStyles()}`}>
       <div className={`grid grid-cols-3 items-center px-8 h-[72px] ${isAboutPage ? "text-white" : "text-black"}`}>
         {/* LEFT: Branding */}
         <div className="flex justify-start">

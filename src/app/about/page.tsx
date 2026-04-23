@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
+import Link from "next/link";
 
 export default function AboutPage() {
   const containerRef = useRef(null);
@@ -100,9 +101,9 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <button className="px-12 py-4 bg-white text-black text-[10px] font-bold uppercase tracking-[0.4em] hover:scale-105 transition-transform duration-500">
+            <Link href="/collections#categories" className="inline-block px-12 py-4 bg-white text-black text-[10px] font-bold uppercase tracking-[0.4em] hover:scale-105 transition-transform duration-500">
               Explore The Collections
-            </button>
+            </Link>
           </motion.div>
         </section>
 

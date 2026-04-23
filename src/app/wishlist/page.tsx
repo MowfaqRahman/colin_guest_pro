@@ -15,41 +15,7 @@ export default function WishlistDashboard() {
 
 
   return (
-    <main className="min-h-screen bg-[#f3f4f6] text-black font-sans relative">
-      {/* Navigation Layer */}
-      <nav className="w-full bg-white border-b border-black/5 z-50">
-        <div className="flex items-center justify-between px-8 py-6">
-          <Link href="/" className="text-xl font-bold tracking-widest uppercase">COLIN GUEST</Link>
-          <div className="hidden md:flex gap-12 text-[10px] tracking-[0.2em] uppercase font-bold">
-            <button className="hover:text-black/60 transition-colors">Runway</button>
-            <Link href="/" className="hover:text-black/60 transition-colors">The Lookbook</Link>
-            <Link href="/collections" className="hover:text-black/60 transition-colors">Collections</Link>
-          </div>
-          <div className="flex items-center gap-6 text-xs font-semibold tracking-widest uppercase mb-1">
-            <Search size={18} />
-            {isLoggedIn ? (
-              <div className="flex items-center gap-3">
-                <span className="text-[9px] font-bold text-black/40 lowercase max-w-[80px] truncate">{user?.email}</span>
-                <button onClick={logout} className="text-black/40 hover:text-black transition-colors">
-                  <User size={18} strokeWidth={1.5} className="fill-black" />
-                </button>
-              </div>
-            ) : (
-              <Link href="/login" className="cursor-pointer hover:scale-110 transition-transform block">
-                <User size={18} strokeWidth={1.5} />
-              </Link>
-            )}
-            <Link href="/wishlist">
-              <Bookmark size={18} strokeWidth={1.5} />
-            </Link>
-            <div className="flex items-center gap-2 cursor-pointer hover:text-black/60 transition-colors" onClick={openCart}>
-              <ShoppingBag size={18} />
-              <span>Cart ({items.length})</span>
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <main className="min-h-screen bg-white text-black font-sans relative pt-[72px]">
       {/* Main Body Dashboard Logic */}
       
       {/* CONDITION 2: Guest + Has Items (Displays the slim top banner mapped to image_14) */}
@@ -96,7 +62,7 @@ export default function WishlistDashboard() {
          </div>
       )}
 
-      {/* CONDITION 1: Guest + Empty Wishlist (Displays the huge splash screen from image_13) */}
+      {/* CONDITION 1: Guest + Empty Wishlist (Displays the splash screen) */}
       {!isLoggedIn && wishlistItems.length === 0 && (
         <div className="max-w-[1400px] mx-auto px-8 pt-24 flex flex-col items-center">
           <div className="text-center w-full max-w-[500px] mb-12">
@@ -121,6 +87,27 @@ export default function WishlistDashboard() {
                No account? <a href="#" className="font-bold text-black underline underline-offset-2 hover:text-black/60 transition-colors">Sign up — it takes a minute</a>
              </p>
           </div>
+        </div>
+      )}
+
+      {/* CONDITION 3: Logged In + Empty Wishlist (Premium Editorial Landing) */}
+      {isLoggedIn && wishlistItems.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[70vh] px-8 py-24 text-center">
+          <div className="relative mb-12">
+            <div className="absolute inset-0 bg-black/5 blur-3xl rounded-full scale-150" />
+            <div className="relative w-24 h-24 bg-white rounded-full flex items-center justify-center shadow-2xl border border-black/5">
+              <Bookmark size={32} strokeWidth={1} className="text-black/20" />
+            </div>
+          </div>
+          
+          <h3 className="text-3xl font-serif italic mb-4 tracking-tight">Your curations await.</h3>
+          <p className="text-xs text-black/50 font-medium tracking-widest uppercase mb-10 max-w-[320px] leading-relaxed">
+            You haven't saved any pieces yet. Explore the latest collections to define your silhouette.
+          </p>
+
+          <Link href="/collections#categories" className="px-12 py-5 bg-black text-white rounded-full text-[10px] font-bold uppercase tracking-[0.4em] hover:scale-105 transition-transform shadow-xl">
+             Explore Collections
+          </Link>
         </div>
       )}
 

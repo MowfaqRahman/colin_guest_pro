@@ -6,7 +6,7 @@ export default function ExploreButton() {
   const handleClick = () => {
     const target = document.getElementById("categories");
     if (target) {
-      const targetPosition = target.getBoundingClientRect().top + window.scrollY - 5 // Increased depth to show labels
+      const targetPosition = target.getBoundingClientRect().top + window.scrollY;
 
       animate(window.scrollY, targetPosition, {
         duration: 1.4,
