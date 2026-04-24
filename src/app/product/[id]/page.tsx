@@ -25,6 +25,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         product = {
           id: shopifyProduct.id,
           src: shopifyProduct.images.edges[0]?.node.url || "/placeholder.jpg",
+          secondarySrc: shopifyProduct.images.edges[1]?.node.url,
           srcs: shopifyProduct.images.edges.map((e: any) => e.node.url),
           title: shopifyProduct.title,
           price: `${shopifyProduct.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(shopifyProduct.priceRange.minVariantPrice.amount).toLocaleString()}`,
@@ -48,6 +49,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           suggestedProducts = recommendations.map((p: any) => ({
             id: p.id,
             src: p.images.edges[0]?.node.url || "/placeholder.jpg",
+            secondarySrc: p.images.edges[1]?.node.url,
             srcs: p.images.edges.map((e: any) => e.node.url),
             title: p.title,
             price: `${p.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(p.priceRange.minVariantPrice.amount).toLocaleString()}`,

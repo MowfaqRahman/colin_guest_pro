@@ -18,15 +18,15 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Initialize Lenis with 'Liquid Silk' physics
+    // Initialize Lenis with 'Hyper-Buttery' physics
     const lenis = new Lenis({
-      duration: 1.5,
-      lerp: 0.05, // Heavy, buttery lerp
+      duration: 2.0, // Long, cinematic duration
+      lerp: 0.04, // Heavier, more luxurious glide
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       orientation: "vertical",
       gestureOrientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 0.8, // Slightly more controlled
+      wheelMultiplier: 1.0, 
       touchMultiplier: 1.5,
     });
 

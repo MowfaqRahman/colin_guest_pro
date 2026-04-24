@@ -16,6 +16,8 @@ export default async function Home() {
   const displayProducts: Product[] = shopifyProducts.map((p: any) => ({
     id: p.id,
     src: p.images.edges[0]?.node.url || "/placeholder.jpg",
+    secondarySrc: p.images.edges[1]?.node.url,
+    srcs: p.images.edges.map((e: any) => e.node.url),
     title: p.title,
     price: `${p.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(p.priceRange.minVariantPrice.amount).toLocaleString()}`,
     desc: p.teaser?.value || p.description,

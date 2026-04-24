@@ -7,6 +7,7 @@ export type ProductVariant = {
 export type Product = {
   id: string | number;
   src: string;
+  secondarySrc?: string;
   srcs?: string[];
   title: string;
   price: string;
