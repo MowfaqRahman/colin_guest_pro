@@ -15,13 +15,15 @@ interface ProductClientProps {
 
 export default function ProductClient({ product, suggestedProducts }: ProductClientProps) {
   const [selectedSize, setSelectedSize] = useState<string | null>(
-    product.variants?.find(v => v.availableForSale)?.title || 
-    (product.variants && product.variants.length > 0 ? product.variants[0].title : "XS")
+    product.variants?.find(v => v.availableForSale)?.title || null
   );
   const [activeTab, setActiveTab] = useState<string>("Details & Description");
 
   const { openCart, addToCart, wishlistItems, toggleWishlist } = useCartStore();
   const isWishlisted = wishlistItems.some((item: Product) => item.id === product.id);
+
+  // Determine if all variants are sold out
+  const isAllSoldOut = !product.variants || product.variants.length === 0 || product.variants.every(v => !v.availableForSale);
 
   // If we only have 1 image, duplicate it twice so the scrolling feature still functions visually.
   const displayImages = product.srcs && product.srcs.length > 1 ? product.srcs : [product.src, product.src, product.src];
@@ -120,17 +122,20 @@ export default function ProductClient({ product, suggestedProducts }: ProductCli
 
               <div className="flex gap-3 mb-6">
                 <button 
-                  onClick={() => addToCart(product, selectedSize || 'M')}
-                  className="flex-1 border border-black/10 bg-white text-black py-3 rounded-full text-[9px] font-extrabold uppercase hover:border-black transition-colors shadow-sm tracking-[0.1em]"
+                  disabled={isAllSoldOut || !selectedSize}
+                  onClick={() => product && selectedSize && addToCart(product, selectedSize)}
+                  className={`flex-1 border border-black/10 bg-white text-black py-3 rounded-full text-[9px] font-extrabold uppercase hover:border-black transition-colors shadow-sm tracking-[0.1em] ${isAllSoldOut ? 'opacity-30 cursor-not-allowed' : ''}`}
                 >
-                  ADD TO BAG
+                  {isAllSoldOut ? 'SOLD OUT' : 'ADD TO BAG'}
                 </button>
-                <button 
-                  onClick={() => { addToCart(product, selectedSize || 'M'); setTimeout(openCart, 100); }}
-                  className="flex-1 bg-black border border-black text-white py-3 rounded-full text-[9px] font-extrabold uppercase hover:bg-black/80 transition-colors shadow-sm tracking-[0.1em]"
-                >
-                  BUY NOW
-                </button>
+                {!isAllSoldOut && (
+                  <button 
+                    onClick={() => { product && selectedSize && addToCart(product, selectedSize || 'M'); setTimeout(openCart, 100); }}
+                    className="flex-1 bg-black border border-black text-white py-3 rounded-full text-[9px] font-extrabold uppercase hover:bg-black/80 transition-colors shadow-sm tracking-[0.1em]"
+                  >
+                    BUY NOW
+                  </button>
+                )}
               </div>
 
               <div className="mt-0 bg-white rounded-2xl border border-black/5 overflow-hidden shadow-sm mb-4">
