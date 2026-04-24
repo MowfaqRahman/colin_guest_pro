@@ -12,7 +12,7 @@ interface LookbookClientProps {
 }
 
 export default function LookbookClient({ products }: LookbookClientProps) {
-  const containerRef = useRef(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Track the scroll of the whole page
   const { scrollYProgress } = useScroll({ container: containerRef });
