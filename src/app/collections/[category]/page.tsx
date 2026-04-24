@@ -29,7 +29,7 @@ export default async function CategoryGrid({ params }: { params: Promise<{ categ
     category: p.productType || category.charAt(0).toUpperCase() + category.slice(1)
   }));
 
-  const formattedCategory = category.split('-').join(' ');
+  const formattedCategory = category.toLowerCase() === 'all' ? 'ALL PRODUCTS' : category.split('-').join(' ');
 
   return (
     <main className="min-h-screen bg-white text-black font-sans relative">
