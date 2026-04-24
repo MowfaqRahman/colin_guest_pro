@@ -133,7 +133,7 @@ export default function ProductClient({ product, suggestedProducts }: ProductCli
                 </button>
               </div>
 
-              <div className="mt-0 bg-white rounded-2xl border border-black/5 overflow-hidden shadow-sm flex-1">
+              <div className="mt-0 bg-white rounded-2xl border border-black/5 overflow-hidden shadow-sm mb-4">
                 <div className="flex">
                   {['Details & Description', 'Washcare', 'Shipping'].map(tab => (
                     <button 

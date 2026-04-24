@@ -1,5 +1,5 @@
-import { models, Product } from "@/lib/data";
-import { getProductById, getProductRecommendations } from "@/lib/shopify";
+import { Product } from "@/lib/data";
+import { getProductById, getProductRecommendations, getAllProducts } from "@/lib/shopify";
 import ProductClient from "@/components/product-client";
 import { notFound } from "next/navigation";
 
@@ -8,13 +8,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const { id } = resolvedParams;
 
   let product: Product | undefined;
-  let suggestedProducts: Product[] = models.slice(-4);
-
-  // Try to find in mock data first (if it's a number)
-  const mockId = parseInt(id);
-  if (!isNaN(mockId)) {
-    product = models.find((m) => m.id === mockId);
-  }
+  let suggestedProducts: Product[] = [];
 
   // If not found in mock data, try Shopify (if ID looks like a Shopify ID or mock failed)
   if (!product) {
@@ -56,6 +50,22 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             desc: p.description,
             category: p.productType || "Collection"
           }));
+        } else {
+          // Fallback: Fetch general products if no recommendations are found
+          const allProducts = await getAllProducts();
+          suggestedProducts = allProducts
+            .filter((p: any) => p.id !== shopifyProduct.id) // Don't show current product
+            .slice(0, 4)
+            .map((p: any) => ({
+              id: p.id,
+              src: p.images.edges[0]?.node.url || "/placeholder.jpg",
+              secondarySrc: p.images.edges[1]?.node.url,
+              srcs: p.images.edges.map((e: any) => e.node.url),
+              title: p.title,
+              price: `${p.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(p.priceRange.minVariantPrice.amount).toLocaleString()}`,
+              desc: p.description,
+              category: p.productType || "Collection"
+            }));
         }
       }
     } catch (error) {
