@@ -41,6 +41,7 @@ export default function AboutPage() {
       animate={{ opacity: 1 }} 
       transition={{ duration: 1, ease: "easeOut" }}
     >
+      <link rel="preload" href="/about_bg.MP4" as="video" type="video/mp4" />
       <main ref={containerRef} className="relative h-[180vh] bg-black">
         
         {/* FIXED VIDEO BACKGROUND */}
@@ -57,10 +58,10 @@ export default function AboutPage() {
               muted
               loop
               playsInline
+              preload="auto"
               className="w-full h-full object-cover"
             >
               <source src="/about_bg.MP4" type="video/mp4" />
-              <source src="https://assets.mixkit.co/videos/preview/mixkit-fashion-model-posing-in-a-field-of-flowers-40010-large.mp4" type="video/mp4" />
             </video>
           </motion.div>
           
