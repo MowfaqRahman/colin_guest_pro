@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef, useEffect } from "react";
@@ -14,60 +13,25 @@ interface LookbookClientProps {
 export default function LookbookClient({ products }: LookbookClientProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Repeat the products 30 times as requested
+  const repeatedProducts = Array(30).fill(products).flat();
+  const totalItems = repeatedProducts.length;
+
   // Track the scroll of the whole page
   const { scrollYProgress } = useScroll({ container: containerRef });
   
-  // Create a much larger set for infinite scrolling feel
-  const loopFactor = 10;
-  const loopedModels = Array(loopFactor).fill(products).flat();
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    // Start in the middle of the loop for seamless bi-directional feel
-    const middleIndex = Math.floor(loopFactor / 2);
-    const itemHeight = container.scrollHeight / loopFactor;
-    container.scrollTop = itemHeight * middleIndex;
-
-    const handleScroll = () => {
-      const scrollPos = container.scrollTop;
-      const totalHeight = container.scrollHeight;
-      const threshold = itemHeight; // One full set height
-
-      if (scrollPos > totalHeight - threshold) {
-        // Near end, jump back towards middle
-        container.style.scrollSnapType = 'none';
-        container.scrollTop = itemHeight * (middleIndex);
-        setTimeout(() => {
-          container.style.scrollSnapType = 'y mandatory';
-        }, 10);
-      } else if (scrollPos < threshold / 2) {
-        // Near start, jump forward towards middle
-        container.style.scrollSnapType = 'none';
-        container.scrollTop = itemHeight * (middleIndex);
-        setTimeout(() => {
-          container.style.scrollSnapType = 'y mandatory';
-        }, 10);
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [products]);
-
   return (
     <main ref={containerRef} className="bg-[#f9f9fa] text-black font-sans relative h-screen overflow-y-scroll snap-y snap-mandatory hide-scrollbar">
       <div className="flex w-full pt-20 relative">
-        {/* LEFT/CENTER: Sticky 3D Carousel */}
-        <div className="w-[75%] sticky top-20 h-[calc(100vh-5rem)] flex items-center justify-center z-10 perspective-[1200px] overflow-hidden">
+        {/* LEFT/CENTER: Sticky Carousel */}
+        <div className="w-[75%] sticky top-20 h-[calc(100vh-5rem)] flex items-center justify-center z-10 overflow-hidden">
           <div className="relative w-full h-[85%] flex items-center justify-center">
-             {loopedModels.map((model, index) => (
+             {repeatedProducts.map((model, index) => (
                 <ScrollModel 
                   key={`${model.id}-${index}`}
                   model={model}
                   index={index}
-                  total={loopedModels.length}
+                  total={totalItems}
                   progress={scrollYProgress}
                 />
              ))}
@@ -77,7 +41,7 @@ export default function LookbookClient({ products }: LookbookClientProps) {
         {/* RIGHT: Synchronized Scrollable Column */}
         <div className="w-[25%] bg-white border-l border-black/5 relative z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.03)]">
            <div className="flex flex-col">
-              {loopedModels.map((listModel, index) => (
+              {repeatedProducts.map((listModel, index) => (
                 <div key={`sidebar-${listModel.id}-${index}`} className="min-h-screen p-6 border-b border-black/5 flex flex-col justify-center items-center group snap-start snap-always">
                   <Link href={`/product/${encodeURIComponent(listModel.id)}`} className="relative w-[75%] aspect-[3/4] mb-8 overflow-hidden rounded-sm bg-[#fafafa] flex items-center justify-center pt-8">
                     <div className="relative w-[90%] h-[90%]">
@@ -105,7 +69,7 @@ export default function LookbookClient({ products }: LookbookClientProps) {
                   </div>
                </div>
               ))}
-              <div className="h-[30vh] bg-white"></div>
+              <div className="h-[20vh] bg-white"></div>
            </div>
         </div>
       </div>
@@ -151,10 +115,11 @@ function ScrollModel({ model, index, total, progress }: any) {
           alt={model.title} 
           fill 
           className="object-contain" 
-          priority={index < 5} 
+          priority={index < 10} 
           sizes="(max-width: 768px) 100vw, 80vw"
         />
       </div>
     </motion.div>
   );
 }
+
