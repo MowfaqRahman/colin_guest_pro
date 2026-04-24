@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -17,11 +17,47 @@ export default function LookbookClient({ products }: LookbookClientProps) {
   // Track the scroll of the whole page
   const { scrollYProgress } = useScroll({ container: containerRef });
   
-  // Create a looped set for infinite scrolling feel
-  const loopedModels = [...products, ...products, ...products];
+  // Create a much larger set for infinite scrolling feel
+  const loopFactor = 10;
+  const loopedModels = Array(loopFactor).fill(products).flat();
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Start in the middle of the loop for seamless bi-directional feel
+    const middleIndex = Math.floor(loopFactor / 2);
+    const itemHeight = container.scrollHeight / loopFactor;
+    container.scrollTop = itemHeight * middleIndex;
+
+    const handleScroll = () => {
+      const scrollPos = container.scrollTop;
+      const totalHeight = container.scrollHeight;
+      const threshold = itemHeight; // One full set height
+
+      if (scrollPos > totalHeight - threshold) {
+        // Near end, jump back towards middle
+        container.style.scrollSnapType = 'none';
+        container.scrollTop = itemHeight * (middleIndex);
+        setTimeout(() => {
+          container.style.scrollSnapType = 'y mandatory';
+        }, 10);
+      } else if (scrollPos < threshold / 2) {
+        // Near start, jump forward towards middle
+        container.style.scrollSnapType = 'none';
+        container.scrollTop = itemHeight * (middleIndex);
+        setTimeout(() => {
+          container.style.scrollSnapType = 'y mandatory';
+        }, 10);
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
+  }, [products]);
 
   return (
-    <main ref={containerRef} className="bg-[#f9f9fa] text-black font-sans relative h-screen overflow-y-scroll snap-y snap-mandatory scroll-smooth">
+    <main ref={containerRef} className="bg-[#f9f9fa] text-black font-sans relative h-screen overflow-y-scroll snap-y snap-mandatory hide-scrollbar">
       <div className="flex w-full pt-20 relative">
         {/* LEFT/CENTER: Sticky 3D Carousel */}
         <div className="w-[75%] sticky top-20 h-[calc(100vh-5rem)] flex items-center justify-center z-10 perspective-[1200px] overflow-hidden">
@@ -73,6 +109,15 @@ export default function LookbookClient({ products }: LookbookClientProps) {
            </div>
         </div>
       </div>
+      <style dangerouslySetInnerHTML={{ __html: `
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}} />
     </main>
   );
 }
