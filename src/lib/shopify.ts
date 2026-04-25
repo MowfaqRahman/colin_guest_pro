@@ -23,7 +23,7 @@ export async function shopifyFetch({ query, variables }: { query: string; variab
     });
 
     const result = await response.json();
-    
+
     if (result.errors) {
       const isUnauthorized = result.errors.some((e: any) => e.extensions?.code === 'UNAUTHORIZED');
       if (isUnauthorized) {
@@ -100,7 +100,7 @@ export async function getCollectionProducts(handle: string) {
     `;
     const listResponse = await shopifyFetch({ query: listQuery });
     const collections = listResponse.data?.collections?.edges || [];
-    const match = collections.find((edge: any) => 
+    const match = collections.find((edge: any) =>
       edge.node.title.toLowerCase() === handle.replace(/-/g, ' ').toLowerCase() ||
       edge.node.handle === handle.toLowerCase().replace(/\s+/g, '-')
     );
@@ -246,7 +246,7 @@ export async function getCollection(handle: string) {
     `;
     const listResponse = await shopifyFetch({ query: listQuery });
     const collections = listResponse.data?.collections?.edges || [];
-    const match = collections.find((edge: any) => 
+    const match = collections.find((edge: any) =>
       edge.node.title.toLowerCase() === handle.replace(/-/g, ' ').toLowerCase() ||
       edge.node.handle === handle.toLowerCase().replace(/\s+/g, '-')
     );
@@ -434,4 +434,27 @@ export async function customerRecover(email: string) {
   });
 
   return response.data?.customerRecover;
+}
+
+export async function getAllCollections() {
+  const query = `
+    query getCollections {
+      collections(first: 20) {
+        edges {
+          node {
+            id
+            title
+            handle
+            image {
+              url
+              altText
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({ query });
+  return response.data?.collections?.edges.map((edge: any) => edge.node) || [];
 }

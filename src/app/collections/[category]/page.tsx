@@ -1,4 +1,4 @@
-import { getCollectionProducts, getAllProducts } from "@/lib/shopify";
+import { getCollectionProducts, getAllProducts, getAllCollections } from "@/lib/shopify";
 import { ProductCard } from "@/components/product-card";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -20,6 +20,10 @@ export default async function CategoryGrid({ params }: { params: Promise<{ categ
     if (category.toLowerCase() === 'jeans') shopifyHandle = 'jeans';
     shopifyProducts = await getCollectionProducts(shopifyHandle);
   }
+
+  // Fetch all collections for the "Browse Categories" section
+  const allCollections = await getAllCollections();
+  const collections = allCollections.filter(c => c.title.toLowerCase() !== 'landing page');
   
   // Map Shopify products to our Product type
   const displayProducts: Product[] = shopifyProducts.map((p: any) => ({
@@ -41,6 +45,7 @@ export default async function CategoryGrid({ params }: { params: Promise<{ categ
         category={category}
         formattedCategory={formattedCategory}
         displayProducts={displayProducts}
+        collections={collections}
       />
     </main>
   );

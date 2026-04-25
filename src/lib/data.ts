@@ -21,6 +21,16 @@ export type Product = {
   variants?: ProductVariant[];
 };
 
+export type Collection = {
+  id: string;
+  title: string;
+  handle: string;
+  image?: {
+    url: string;
+    altText?: string;
+  };
+};
+
 export const models: Product[] = [
   { id: 1, src: "/black_acid_wash_hoodies.jpg", title: "Acid Wash Heavyweight", price: "$850", desc: "Premium heavyweight cotton with a deep acid wash finish for a vintage editorial silhouette.", category: "Hoodies" },
   { id: 2, src: "/black_faded_jean.jpg", title: "Faded Utility Denim", price: "$720", desc: "Relaxed fit luxury denim with custom distressing and a faded noir wash.", category: "Jeans" },

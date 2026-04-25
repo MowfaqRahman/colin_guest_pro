@@ -4,14 +4,14 @@ import { useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, animate } from "framer-motion";
+import { Collection } from "@/lib/data";
 
 interface CollectionsHubClientProps {
-  hoodieImage?: string;
-  jeansImage?: string;
-  allImage?: string;
+  collections: Collection[];
+  allProductsImage: string;
 }
 
-export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: CollectionsHubClientProps) {
+export function CollectionsHubClient({ collections, allProductsImage }: CollectionsHubClientProps) {
   useEffect(() => {
     // If arriving with #categories hash, perform buttery scroll 
     if (window.location.hash === "#categories") {
@@ -72,7 +72,7 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
           <Link href="/collections/all" className="group">
             <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
               <Image 
-                src={allImage || ""} 
+                src={allProductsImage} 
                 alt="All Products" 
                 fill 
                 className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
@@ -84,37 +84,23 @@ export function CollectionsHubClient({ hoodieImage, jeansImage, allImage }: Coll
           </Link>
         </motion.div>
 
-        <motion.div variants={itemVariants}>
-          <Link href="/collections/hoodies" className="group">
-            <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
-              <Image 
-                src={hoodieImage || ""} 
-                alt="Hoodies" 
-                fill 
-                className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
-              />
-            </div>
-            <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
-              Hoodies <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
-            </div>
-          </Link>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Link href="/collections/jeans" className="group">
-            <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
-              <Image 
-                src={jeansImage || ""} 
-                alt="Jeans" 
-                fill 
-                className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
-              />
-            </div>
-            <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
-              Jeans <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
-            </div>
-          </Link>
-        </motion.div>
+        {collections.map((collection) => (
+          <motion.div key={collection.id} variants={itemVariants}>
+            <Link href={`/collections/${collection.handle}`} className="group">
+              <div className="relative w-full aspect-square bg-[#f8f8f8] rounded-2xl overflow-hidden">
+                <Image 
+                  src={collection.image?.url || "/placeholder.jpg"} 
+                  alt={collection.title} 
+                  fill 
+                  className="object-cover mix-blend-multiply group-hover:scale-105 transition-transform duration-700" 
+                />
+              </div>
+              <div className="mt-6 flex items-center font-bold text-xs tracking-widest uppercase">
+                {collection.title} <span className="ml-3 group-hover:translate-x-2 transition-transform">→</span>
+              </div>
+            </Link>
+          </motion.div>
+        ))}
       </motion.div>
     </div>
   );

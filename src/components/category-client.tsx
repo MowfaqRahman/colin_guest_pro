@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { SlidersHorizontal, Flashlight } from "lucide-react";
 import { ProductCard } from "./product-card";
-import { Product } from "@/lib/data";
+import { Product, Collection } from "@/lib/data";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -11,15 +11,18 @@ interface CategoryClientProps {
   category: string;
   formattedCategory: string;
   displayProducts: Product[];
+  collections: Collection[];
 }
 
-export default function CategoryClient({ category, formattedCategory, displayProducts }: CategoryClientProps) {
+export default function CategoryClient({ category, formattedCategory, displayProducts, collections }: CategoryClientProps) {
   const [isDense, setIsDense] = useState(false);
 
   const categories = [
     { name: 'View all', id: 'all' },
-    { name: 'Hoodies', id: 'hoodies' },
-    { name: 'Jeans', id: 'jeans' }
+    ...collections.map(c => ({
+      name: c.title,
+      id: c.handle
+    }))
   ];
 
   return (

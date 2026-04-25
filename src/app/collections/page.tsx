@@ -1,16 +1,18 @@
-import { getCollection, getCollectionProducts } from "@/lib/shopify";
+import { getAllCollections } from "@/lib/shopify";
 import { CollectionsHubClient } from "@/components/collections-hub-client";
 import Image from "next/image";
 import ExploreButton from "@/components/explore-button";
 
 export default async function CollectionsHub() {
-  // Fetch collection details for images
-  const hoodieCollection = await getCollection("hoodie");
-  const jeansCollection = await getCollection("jeans");
-  const allCollection = await getCollection("Landing Page"); 
+  // Fetch all collections dynamically
+  const allCollections = await getAllCollections();
   
-  // Best Idea: Use the Collection's own "Featured Image" from Shopify Admin
-  const allImage = allCollection?.image?.url;
+  // Find Landing Page collection for the "All Products" cover
+  const landingPageCollection = allCollections.find(c => c.title.toLowerCase() === 'landing page');
+  const allProductsImage = landingPageCollection?.image?.url || "/collections_hero.jpg";
+
+  // Filter out "Landing Page" from the Browse Categories section
+  const filteredCollections = allCollections.filter(c => c.title.toLowerCase() !== 'landing page');
 
   return (
     <main className="min-h-screen bg-white text-black font-sans relative overflow-x-hidden">
@@ -42,9 +44,8 @@ export default async function CollectionsHub() {
 
       {/* Interactive Categories Grid - Client Component for Motion */}
       <CollectionsHubClient 
-        hoodieImage={hoodieCollection?.image?.url} 
-        jeansImage={jeansCollection?.image?.url}
-        allImage={allImage}
+        collections={filteredCollections}
+        allProductsImage={allProductsImage}
       />
     </main>
   );

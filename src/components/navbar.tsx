@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Search, ShoppingBag, Bookmark, User, ChevronDown } from "lucide-react";
+import { Search, ShoppingBag, Bookmark, User, ChevronDown, X } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { getAllCollections } from "@/lib/shopify";
+import { Collection } from "@/lib/data";
 
 import { motion } from "framer-motion";
 
@@ -14,6 +16,24 @@ export function Navbar() {
   const { items, openCart, wishlistItems, isLoggedIn, user, logout } = useCartStore();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const fetchCollections = async () => {
+      const fetchedCollections = await getAllCollections();
+      setCollections(fetchedCollections.filter(c => c.title.toLowerCase() !== 'landing page'));
+    };
+    fetchCollections();
+  }, []);
+
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -32,10 +52,11 @@ export function Navbar() {
 
   // Liquid Logic: Transparent at top, frosted on scroll
   const getNavStyles = () => {
+    if (isSearchOpen) return "bg-transparent border-none shadow-none";
     if (isAboutPage) return "bg-transparent border-none";
     if (isCollectionsPage) {
-      return scrolled 
-        ? "bg-white/40 backdrop-blur-2xl shadow-sm" 
+      return scrolled
+        ? "bg-white/40 backdrop-blur-2xl shadow-sm"
         : "bg-transparent border-none";
     }
     return "bg-[#f9f9fa]/90 backdrop-blur-md border-b border-black/5";
@@ -43,15 +64,15 @@ export function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ease-out ${getNavStyles()}`}>
-      <div className={`grid grid-cols-3 items-center px-8 h-[72px] ${isAboutPage ? "text-white" : "text-black"}`}>
+      <div className={`grid grid-cols-3 items-center px-8 h-[72px] ${isSearchOpen && !isAboutPage ? "bg-white" : ""} ${isAboutPage ? "text-white" : "text-black"}`}>
         {/* LEFT: Branding */}
         <div className="flex justify-start">
           <Link href="/" className={`relative h-[72px] w-64 transition-opacity flex items-center overflow-hidden ml-[-24px] ${isAboutPage ? "invert brightness-200" : "hover:opacity-60"}`}>
-            <Image 
-              src="/logo_cg.png" 
-              alt="COLIN GUEST" 
-              fill 
-              className="object-cover" 
+            <Image
+              src="/logo_cg.png"
+              alt="COLIN GUEST"
+              fill
+              className="object-cover"
               priority
             />
           </Link>
@@ -60,23 +81,22 @@ export function Navbar() {
         {/* CENTER: Editorial Navigation */}
         <div className="hidden md:flex justify-center gap-12 text-[10px] tracking-[0.2em] uppercase font-bold">
           {navLinks.map((link) => {
-            const isActive = link.href === "/" 
-              ? pathname === "/" 
+            const isActive = link.href === "/"
+              ? pathname === "/"
               : pathname.startsWith(link.href);
-            
+
             return (
-              <Link 
+              <Link
                 key={link.href}
-                href={link.href} 
-                className={`relative py-1 transition-colors ${
-                  isAboutPage 
-                    ? isActive ? 'text-white' : 'text-white/50 hover:text-white'
-                    : isActive ? 'text-black' : 'text-black/40 hover:text-black'
-                }`}
+                href={link.href}
+                className={`relative py-1 transition-colors ${isAboutPage
+                  ? isActive ? 'text-white' : 'text-white/50 hover:text-white'
+                  : isActive ? 'text-black' : 'text-black/40 hover:text-black'
+                  }`}
               >
                 {link.name}
                 {isActive && (
-                  <motion.div 
+                  <motion.div
                     layoutId="nav-underline"
                     className={`absolute bottom-0 left-0 right-0 h-[1px] ${isAboutPage ? "bg-white" : "bg-black"}`}
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
@@ -89,11 +109,16 @@ export function Navbar() {
 
         {/* RIGHT: Constant Icons Cluster */}
         <div className={`flex items-center justify-end gap-6 text-xs font-semibold tracking-widest uppercase ${isAboutPage ? "text-white" : "text-black"}`}>
-          <Search size={18} className={`cursor-pointer transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`} />
-          
+          <button
+            onClick={() => setIsSearchOpen(!isSearchOpen)}
+            className={`cursor-pointer transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}
+          >
+            <Search size={18} />
+          </button>
+
           {isLoggedIn ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsAccountOpen(!isAccountOpen)}
                 className={`flex items-center gap-1 transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}
               >
@@ -105,15 +130,14 @@ export function Navbar() {
                 <>
                   {/* Backdrop for closing */}
                   <div className="fixed inset-0 z-[-1]" onClick={() => setIsAccountOpen(false)} />
-                  
-                  <motion.div 
+
+                  <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    className={`absolute right-0 mt-4 w-48 py-2 rounded-lg shadow-2xl border backdrop-blur-xl z-[100] ${
-                      isAboutPage 
-                      ? "bg-black/80 border-white/10 text-white" 
+                    className={`absolute right-0 mt-4 w-48 py-2 rounded-lg shadow-2xl border backdrop-blur-xl z-[100] ${isAboutPage
+                      ? "bg-black/80 border-white/10 text-white"
                       : "bg-white/80 border-black/5 text-black"
-                    }`}
+                      }`}
                   >
                     <div className="px-4 py-2 border-b border-white/10 mb-1">
                       <p className="text-[9px] font-bold uppercase tracking-widest opacity-50">Account</p>
@@ -121,7 +145,7 @@ export function Navbar() {
                     <Link href="/profile" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Profile</Link>
                     <Link href="/orders" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Orders</Link>
                     <div className="h-[1px] bg-black/5 my-1" />
-                    <button 
+                    <button
                       onClick={() => {
                         logout();
                         setIsAccountOpen(false);
@@ -147,8 +171,8 @@ export function Navbar() {
             )}
           </Link>
 
-          <div 
-            className={`flex items-center gap-2 cursor-pointer transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`} 
+          <div
+            className={`flex items-center gap-2 cursor-pointer transition-colors ${isAboutPage ? "text-white/50 hover:text-white" : "text-black/40 hover:text-black"}`}
             onClick={openCart}
           >
             <ShoppingBag size={18} />
@@ -156,6 +180,97 @@ export function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Search Overlay */}
+      <motion.div
+        initial={{ height: 0, opacity: 0 }}
+        animate={{
+          height: isSearchOpen ? "auto" : 0,
+          opacity: isSearchOpen ? 1 : 0
+        }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className={`overflow-hidden rounded-b-[50px] transition-colors duration-500 border-none ${isAboutPage 
+          ? "bg-black/20 backdrop-blur-3xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]" 
+          : "bg-white shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)]"
+        }`}
+      >
+        <div className="px-10 py-8 max-w-[1600px] mx-auto">
+          <div className="flex items-center gap-6 mb-4 relative">
+            <div className="relative flex-1">
+              <input
+                ref={searchInputRef}
+                type="text"
+                placeholder="Search here..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full rounded-[20px] py-5 px-10 text-[15px] outline-none border-none transition-all font-medium ${isAboutPage
+                  ? "bg-white/10 text-white placeholder:text-white/20 focus:bg-white/20"
+                  : "bg-[#f4f4f5] text-black placeholder:text-black/20"
+                }`}
+              />
+              <Search
+                size={22}
+                className={`absolute right-8 top-1/2 -translate-y-1/2 ${isAboutPage ? "text-white/40" : "text-black/20"}`}
+              />
+            </div>
+            <button
+              onClick={() => {
+                setIsSearchOpen(false);
+                setSearchQuery("");
+              }}
+              className={`p-3 rounded-full transition-all duration-300 ${isAboutPage ? "hover:bg-white/10" : "hover:bg-black/5"}`}
+            >
+              <X size={28} strokeWidth={1} className={isAboutPage ? "text-white/80" : "text-black/80"} />
+            </button>
+          </div>
+
+          <div className="mb-2">
+            <h3 className={`text-[10px] font-sans font-bold uppercase tracking-[0.2em] mb-4 ml-2 ${isAboutPage ? "text-white/60" : "text-black"}`}>Collections</h3>
+            <div className={`rounded-[38px] p-2 px-3 ${isAboutPage ? "bg-white/5" : "bg-[#f0f0f0]"}`}>
+              <div className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory">
+                {collections.map((collection, idx) => (
+                  <motion.div
+                    key={collection.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: isSearchOpen ? 1 : 0, y: isSearchOpen ? 0 : 10 }}
+                    transition={{ delay: 0.1 + idx * 0.04, duration: 0.4 }}
+                    className="snap-start"
+                  >
+                    <Link
+                      href={`/collections/${collection.handle}`}
+                      onClick={() => setIsSearchOpen(false)}
+                      className="group flex-shrink-0 w-[160px] block"
+                    >
+                      <div className={`rounded-[28px] p-1.5 pb-4 flex flex-col h-full transition-all duration-500 border-none ${isAboutPage
+                        ? "bg-white/10 shadow-[0_2px_8px_rgba(255,255,255,0.02)] hover:bg-white/20 hover:shadow-[0_4px_15px_rgba(255,255,255,0.05)]"
+                        : "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
+                      }`}>
+                        <div className="aspect-[1/1] relative rounded-[22px] overflow-hidden mb-3">
+                          {collection.image ? (
+                            <Image
+                              src={collection.image.url}
+                              alt={collection.image.altText || collection.title}
+                              fill
+                              className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
+                            />
+                          ) : (
+                            <div className={`w-full h-full flex items-center justify-center font-sans font-bold text-[10px] uppercase tracking-[0.2em] ${isAboutPage ? "bg-white/5 text-white/20" : "bg-gray-50 text-black/10"}`}>
+                              {collection.title}
+                            </div>
+                          )}
+                        </div>
+                        <p className={`text-[10px] font-sans font-bold text-center px-1 line-clamp-1 uppercase tracking-[0.2em] ${isAboutPage ? "text-white" : "text-black"}`}>
+                          {collection.title}
+                        </p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </nav>
   );
 }
