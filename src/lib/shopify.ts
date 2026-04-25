@@ -459,3 +459,45 @@ export async function getAllCollections(): Promise<Collection[]> {
   const response = await shopifyFetch({ query });
   return response.data?.collections?.edges.map((edge: any) => edge.node) || [];
 }
+
+export async function searchProducts(searchTerm: string): Promise<any[]> {
+  const query = `
+    query searchProducts($searchTerm: String!) {
+      products(first: 10, query: $searchTerm) {
+        edges {
+          node {
+            id
+            title
+            handle
+            description
+            productType
+            priceRange {
+              minVariantPrice {
+                amount
+                currencyCode
+              }
+            }
+            images(first: 1) {
+              edges {
+                node {
+                  url
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await shopifyFetch({
+    query,
+    variables: { searchTerm },
+  });
+
+  return response.data?.products?.edges.map((edge: any) => ({
+    ...edge.node,
+    images: edge.node.images?.edges.map((e: any) => e.node) || []
+  })) || [];
+}

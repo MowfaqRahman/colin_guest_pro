@@ -4,21 +4,24 @@ import Image from "next/image";
 import Link from "next/link";
 import { Search, ShoppingBag, Bookmark, User, ChevronDown, X } from "lucide-react";
 import { useCartStore } from "@/lib/store";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { getAllCollections } from "@/lib/shopify";
-import { Collection } from "@/lib/data";
+import { getAllCollections, searchProducts } from "@/lib/shopify";
+import { Collection, Product } from "@/lib/data";
 
 import { motion } from "framer-motion";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { items, openCart, wishlistItems, isLoggedIn, user, logout } = useCartStore();
   const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,6 +31,26 @@ export function Navbar() {
     };
     fetchCollections();
   }, []);
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(async () => {
+      if (searchQuery.trim().length > 0) {
+        setIsSearching(true);
+        try {
+          const results = await searchProducts(searchQuery);
+          setSearchResults(results);
+        } catch (error) {
+          console.error("Search error:", error);
+        } finally {
+          setIsSearching(false);
+        }
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (isSearchOpen && searchInputRef.current) {
@@ -40,6 +63,20 @@ export function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSearchSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (searchQuery.trim()) {
+      setIsSearchOpen(false);
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
 
   const navLinks = [
     { name: "The Lookbook", href: "/" },
@@ -203,6 +240,7 @@ export function Navbar() {
                 placeholder="Search here..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
                 className={`w-full rounded-[20px] py-5 px-10 text-[15px] outline-none border-none transition-all font-medium ${isAboutPage
                   ? "bg-white/10 text-white placeholder:text-white/20 focus:bg-white/20"
                   : "bg-[#f4f4f5] text-black placeholder:text-black/20"
@@ -210,7 +248,8 @@ export function Navbar() {
               />
               <Search
                 size={22}
-                className={`absolute right-8 top-1/2 -translate-y-1/2 ${isAboutPage ? "text-white/40" : "text-black/20"}`}
+                onClick={() => handleSearchSubmit()}
+                className={`absolute right-8 top-1/2 -translate-y-1/2 cursor-pointer transition-opacity hover:opacity-60 ${isAboutPage ? "text-white/40" : "text-black/20"}`}
               />
             </div>
             <button
@@ -225,47 +264,102 @@ export function Navbar() {
           </div>
 
           <div className="mb-2">
-            <h3 className={`text-[10px] font-sans font-bold uppercase tracking-[0.2em] mb-4 ml-2 ${isAboutPage ? "text-white/60" : "text-black"}`}>Collections</h3>
+            <h3 className={`text-[10px] font-sans font-bold uppercase tracking-[0.2em] mb-4 ml-2 ${isAboutPage ? "text-white/60" : "text-black"}`}>
+              {searchQuery.trim() ? (isSearching ? "Searching..." : `Results for "${searchQuery}"`) : "Collections"}
+            </h3>
+            
             <div className={`rounded-[38px] p-2 px-3 ${isAboutPage ? "bg-white/5" : "bg-[#f0f0f0]"}`}>
-              <div className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory">
-                {collections.map((collection, idx) => (
-                  <motion.div
-                    key={collection.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: isSearchOpen ? 1 : 0, y: isSearchOpen ? 0 : 10 }}
-                    transition={{ delay: 0.1 + idx * 0.04, duration: 0.4 }}
-                    className="snap-start"
-                  >
-                    <Link
-                      href={`/collections/${collection.handle}`}
-                      onClick={() => setIsSearchOpen(false)}
-                      className="group flex-shrink-0 w-[160px] block"
-                    >
-                      <div className={`rounded-[28px] p-1.5 pb-4 flex flex-col h-full transition-all duration-500 border-none ${isAboutPage
-                        ? "bg-white/10 shadow-[0_2px_8px_rgba(255,255,255,0.02)] hover:bg-white/20 hover:shadow-[0_4px_15px_rgba(255,255,255,0.05)]"
-                        : "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
-                      }`}>
-                        <div className="aspect-[1/1] relative rounded-[22px] overflow-hidden mb-3">
-                          {collection.image ? (
-                            <Image
-                              src={collection.image.url}
-                              alt={collection.image.altText || collection.title}
-                              fill
-                              className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
-                            />
-                          ) : (
-                            <div className={`w-full h-full flex items-center justify-center font-sans font-bold text-[10px] uppercase tracking-[0.2em] ${isAboutPage ? "bg-white/5 text-white/20" : "bg-gray-50 text-black/10"}`}>
-                              {collection.title}
+              <div className="flex gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory min-h-[180px]">
+                {searchQuery.trim() ? (
+                  searchResults.length > 0 ? (
+                    searchResults.map((product, idx) => (
+                      <motion.div
+                        key={product.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.04, duration: 0.4 }}
+                        className="snap-start"
+                      >
+                        <Link
+                          href={`/product/${encodeURIComponent(product.id)}`}
+                          onClick={() => setIsSearchOpen(false)}
+                          className="group flex-shrink-0 w-[160px] block"
+                        >
+                          <div className={`rounded-[28px] p-1.5 pb-4 flex flex-col h-full transition-all duration-500 border-none ${isAboutPage
+                            ? "bg-white/10 shadow-[0_2px_8px_rgba(255,255,255,0.02)] hover:bg-white/20 hover:shadow-[0_4px_15px_rgba(255,255,255,0.05)]"
+                            : "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
+                          }`}>
+                            <div className="aspect-[1/1] relative rounded-[22px] overflow-hidden mb-3">
+                              {product.images?.[0] ? (
+                                <Image
+                                  src={product.images[0].url}
+                                  alt={product.images[0].altText || product.title}
+                                  fill
+                                  className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
+                                />
+                              ) : (
+                                <div className={`w-full h-full flex items-center justify-center font-sans font-bold text-[10px] uppercase tracking-[0.2em] ${isAboutPage ? "bg-white/5 text-white/20" : "bg-gray-50 text-black/10"}`}>
+                                  {product.title}
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                        <p className={`text-[10px] font-sans font-bold text-center px-1 line-clamp-1 uppercase tracking-[0.2em] ${isAboutPage ? "text-white" : "text-black"}`}>
-                          {collection.title}
-                        </p>
+                            <p className={`text-[10px] font-sans font-bold text-center px-2 line-clamp-1 uppercase tracking-[0.2em] mb-1 ${isAboutPage ? "text-white" : "text-black"}`}>
+                              {product.title}
+                            </p>
+                            <p className={`text-[9px] font-sans font-medium text-center opacity-40 uppercase tracking-widest ${isAboutPage ? "text-white" : "text-black"}`}>
+                              {product.priceRange.minVariantPrice.amount} {product.priceRange.minVariantPrice.currencyCode}
+                            </p>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))
+                  ) : (
+                    !isSearching && (
+                      <div className={`w-full py-12 text-center text-[11px] font-bold uppercase tracking-widest opacity-30 ${isAboutPage ? "text-white" : "text-black"}`}>
+                        No products found
                       </div>
-                    </Link>
-                  </motion.div>
-                ))}
+                    )
+                  )
+                ) : (
+                  collections.map((collection, idx) => (
+                    <motion.div
+                      key={collection.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: isSearchOpen ? 1 : 0, y: isSearchOpen ? 0 : 10 }}
+                      transition={{ delay: 0.1 + idx * 0.04, duration: 0.4 }}
+                      className="snap-start"
+                    >
+                      <Link
+                        href={`/collections/${collection.handle}`}
+                        onClick={() => setIsSearchOpen(false)}
+                        className="group flex-shrink-0 w-[160px] block"
+                      >
+                        <div className={`rounded-[28px] p-1.5 pb-4 flex flex-col h-full transition-all duration-500 border-none ${isAboutPage
+                          ? "bg-white/10 shadow-[0_2px_8px_rgba(255,255,255,0.02)] hover:bg-white/20 hover:shadow-[0_4_15px_rgba(255,255,255,0.05)]"
+                          : "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
+                        }`}>
+                          <div className="aspect-[1/1] relative rounded-[22px] overflow-hidden mb-3">
+                            {collection.image ? (
+                              <Image
+                                src={collection.image.url}
+                                alt={collection.image.altText || collection.title}
+                                fill
+                                className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
+                              />
+                            ) : (
+                              <div className={`w-full h-full flex items-center justify-center font-sans font-bold text-[10px] uppercase tracking-[0.2em] ${isAboutPage ? "bg-white/5 text-white/20" : "bg-gray-50 text-black/10"}`}>
+                                {collection.title}
+                              </div>
+                            )}
+                          </div>
+                          <p className={`text-[10px] font-sans font-bold text-center px-1 line-clamp-1 uppercase tracking-[0.2em] ${isAboutPage ? "text-white" : "text-black"}`}>
+                            {collection.title}
+                          </p>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))
+                )}
               </div>
             </div>
           </div>
