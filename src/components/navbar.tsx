@@ -24,7 +24,7 @@ export function Navbar() {
   useEffect(() => {
     const fetchCollections = async () => {
       const fetchedCollections = await getAllCollections();
-      setCollections(fetchedCollections.filter(c => c.title.toLowerCase() !== 'landing page'));
+      setCollections(fetchedCollections.filter((c: Collection) => c.title.toLowerCase() !== 'landing page'));
     };
     fetchCollections();
   }, []);

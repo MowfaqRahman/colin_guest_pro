@@ -2,7 +2,7 @@ import { getCollectionProducts, getAllProducts, getAllCollections } from "@/lib/
 import { ProductCard } from "@/components/product-card";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
-import { Product } from "@/lib/data";
+import { Product, Collection } from "@/lib/data";
 
 import CategoryClient from "@/components/category-client";
 
@@ -23,7 +23,7 @@ export default async function CategoryGrid({ params }: { params: Promise<{ categ
 
   // Fetch all collections for the "Browse Categories" section
   const allCollections = await getAllCollections();
-  const collections = allCollections.filter(c => c.title.toLowerCase() !== 'landing page');
+  const collections = allCollections.filter((c: Collection) => c.title.toLowerCase() !== 'landing page');
   
   // Map Shopify products to our Product type
   const displayProducts: Product[] = shopifyProducts.map((p: any) => ({

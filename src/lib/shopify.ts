@@ -1,3 +1,4 @@
+import { Product, Collection } from "./data";
 
 const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN?.trim();
 const accessToken = process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_ACCESS_TOKEN?.trim();
@@ -174,7 +175,7 @@ export async function getProductById(id: string) {
   return response.data?.product;
 }
 
-export async function getAllProducts() {
+export async function getAllProducts(): Promise<any[]> {
   const query = `
     query getProducts {
       products(first: 50) {
@@ -436,7 +437,7 @@ export async function customerRecover(email: string) {
   return response.data?.customerRecover;
 }
 
-export async function getAllCollections() {
+export async function getAllCollections(): Promise<Collection[]> {
   const query = `
     query getCollections {
       collections(first: 20) {
