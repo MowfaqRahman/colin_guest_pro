@@ -38,7 +38,15 @@ export function Navbar() {
         setIsSearching(true);
         try {
           const results = await searchProducts(searchQuery);
-          setSearchResults(results);
+          const mappedResults: Product[] = results.map((p: any) => ({
+            id: p.id,
+            src: p.images[0]?.url || "/placeholder.jpg",
+            title: p.title,
+            price: `${p.priceRange.minVariantPrice.amount} ${p.priceRange.minVariantPrice.currencyCode}`,
+            desc: p.description || "",
+            category: p.productType || "Result"
+          }));
+          setSearchResults(mappedResults);
         } catch (error) {
           console.error("Search error:", error);
         } finally {
@@ -290,10 +298,10 @@ export function Navbar() {
                             : "bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_15px_rgba(0,0,0,0.04)]"
                           }`}>
                             <div className="aspect-[1/1] relative rounded-[22px] overflow-hidden mb-3">
-                              {product.images?.[0] ? (
+                              {product.src ? (
                                 <Image
-                                  src={product.images[0].url}
-                                  alt={product.images[0].altText || product.title}
+                                  src={product.src}
+                                  alt={product.title}
                                   fill
                                   className="object-cover transition-transform duration-1000 ease-in-out group-hover:scale-110"
                                 />
@@ -307,7 +315,7 @@ export function Navbar() {
                               {product.title}
                             </p>
                             <p className={`text-[9px] font-sans font-medium text-center opacity-40 uppercase tracking-widest ${isAboutPage ? "text-white" : "text-black"}`}>
-                              {product.priceRange.minVariantPrice.amount} {product.priceRange.minVariantPrice.currencyCode}
+                              {product.price}
                             </p>
                           </div>
                         </Link>
