@@ -28,6 +28,8 @@ export default function ProfilePage() {
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [error, setError] = useState<string | null>(null);
+  const [isHydrated, setIsHydrated] = useState(false);
+
 
   // Address Form State
   const [isAddingAddress, setIsAddingAddress] = useState(false);
@@ -42,10 +44,15 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    setIsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (isHydrated && !isLoggedIn) {
       router.push("/login");
     }
-  }, [isLoggedIn, router]);
+  }, [isHydrated, isLoggedIn, router]);
+
 
   useEffect(() => {
     if (user) {
@@ -54,7 +61,9 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  if (!isHydrated) return null;
   if (!isLoggedIn || !user) return null;
+
 
   const handleLogout = () => {
     logout();

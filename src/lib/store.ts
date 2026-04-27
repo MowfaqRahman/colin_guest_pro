@@ -238,7 +238,14 @@ export const useCartStore = create<CartState>()(
 
       addAddress: async (address) => {
         const { accessToken, user } = get();
-        if (!accessToken || !user) return { success: false, error: "Not authenticated" };
+        
+        if (!user) return { success: false, error: "No user session found." };
+        if (!accessToken) {
+          return { 
+            success: false, 
+            error: "Google users must link a Shopify account (or sign in via email) to manage persistent addresses." 
+          };
+        }
         
         set({ isSyncing: true });
         try {

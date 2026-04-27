@@ -18,6 +18,14 @@ export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [view, setView] = useState<'login' | 'forgot-password'>('login');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+    if (isLoggedIn) {
+      router.push("/");
+    }
+  }, [isLoggedIn, router]);
 
 
   const handleLogin = async (e: React.FormEvent) => {
