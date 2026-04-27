@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCartStore } from "@/lib/store";
 import { Loader2, ArrowLeft } from "lucide-react";
 import { signIn as socialSignIn } from "next-auth/react";
@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, recoverPassword, isSyncing } = useCartStore();
+  const { isLoggedIn, login, recoverPassword, isSyncing } = useCartStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
