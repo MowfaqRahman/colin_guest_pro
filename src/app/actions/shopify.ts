@@ -61,13 +61,50 @@ export async function adminAddAddress(email: string, address: any) {
     });
 
     const findData = await findResponse.json();
-    const customerId = findData.data?.customers?.edges[0]?.node?.id;
+    let customerId = findData.data?.customers?.edges[0]?.node?.id;
 
+    // 2. If customer doesn't exist, CREATE them
     if (!customerId) {
-      return { success: false, error: "Shopify customer not found for this email." };
+      const createMutation = `
+        mutation customerCreate($input: CustomerInput!) {
+          customerCreate(input: $input) {
+            customer { id }
+            userErrors { message }
+          }
+        }
+      `;
+
+      const createResponse = await fetch(`https://${domain}/admin/api/2024-01/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': adminToken,
+        },
+        body: JSON.stringify({
+          query: createMutation,
+          variables: {
+            input: {
+              email: email,
+              firstName: address.firstName || "",
+              lastName: address.lastName || "",
+              acceptsMarketing: false
+            }
+          }
+        }),
+      });
+
+      const createData = await createResponse.json();
+      customerId = createData.data?.customerCreate?.customer?.id;
+
+      if (!customerId) {
+        return { 
+          success: false, 
+          error: createData.data?.customerCreate?.userErrors[0]?.message || "Could not link your Google account to Shopify." 
+        };
+      }
     }
 
-    // 2. Add address to customer
+    // 3. Add address to customer
     const addQuery = `
       mutation customerUpdate($input: CustomerInput!) {
         customerUpdate(input: $input) {
