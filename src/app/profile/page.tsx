@@ -15,18 +15,31 @@ import {
   ArrowLeft,
   X,
   Check,
-  Loader2
+  Loader2,
+  Building2
 } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, isLoggedIn, logout, updateUser, isSyncing } = useCartStore();
+  const { user, isLoggedIn, logout, updateUser, addAddress, isSyncing } = useCartStore();
   
   const [isEditingName, setIsEditingName] = useState(false);
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [error, setError] = useState<string | null>(null);
+
+  // Address Form State
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState({
+    address1: "",
+    address2: "",
+    city: "",
+    province: "",
+    country: "India",
+    zip: "",
+    phone: ""
+  });
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -58,11 +71,31 @@ export default function ProfilePage() {
     }
   };
 
+  const handleAddAddress = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const result = await addAddress(newAddress);
+    if (result.success) {
+      setIsAddingAddress(false);
+      setNewAddress({
+        address1: "",
+        address2: "",
+        city: "",
+        province: "",
+        country: "India",
+        zip: "",
+        phone: ""
+      });
+    } else {
+      setError(result.error || "Failed to add address");
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#fcfcfc] pt-24 pb-16 px-8 font-sans">
       <div className="max-w-4xl mx-auto relative">
         
-        {/* Top Navigation - Positioned just below Navbar */}
+        {/* Top Navigation */}
         <div className="mb-6">
           <Link 
             href="/" 
@@ -72,7 +105,7 @@ export default function ProfilePage() {
           </Link>
         </div>
 
-        {/* Header Section - Refined Font Size and Spacing */}
+        {/* Header Section */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -136,7 +169,7 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              {error && (
+              {error && !isAddingAddress && (
                 <p className="text-[9px] font-bold uppercase tracking-wider text-red-500 mb-4">{error}</p>
               )}
 
@@ -208,18 +241,141 @@ export default function ProfilePage() {
                   <MapPin size={14} className="text-black/40" strokeWidth={1.5} />
                   <h2 className="text-[9px] font-bold uppercase tracking-[0.3em] text-black/40">Address Book</h2>
                 </div>
-                <button className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black transition-colors group">
-                  <Plus size={12} className="group-hover:rotate-90 transition-transform duration-300" />
-                  Add Address
+                <button 
+                  onClick={() => setIsAddingAddress(!isAddingAddress)}
+                  className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-black/40 hover:text-black transition-colors group"
+                >
+                  <Plus size={12} className={`transition-transform duration-300 ${isAddingAddress ? "rotate-45" : "group-hover:rotate-90"}`} />
+                  {isAddingAddress ? "Cancel" : "Add Address"}
                 </button>
               </div>
 
-              <div className="bg-[#f9f9fa] rounded-[20px] p-6 border border-black/5 border-dashed flex flex-col items-center justify-center text-center">
-                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm">
-                    <MapPin size={14} className="text-black/10" />
-                 </div>
-                 <p className="text-[9px] font-bold uppercase tracking-widest text-black/30 mb-0.5">No addresses added</p>
-                 <p className="text-[8px] font-medium text-black/10 max-w-[150px]">Provide a shipping destination for swifter checkout.</p>
+              <AnimatePresence>
+                {isAddingAddress && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden mb-8"
+                  >
+                    <form onSubmit={handleAddAddress} className="bg-[#f9f9fa] rounded-[24px] p-6 border border-black/5 space-y-4">
+                      {error && isAddingAddress && (
+                        <p className="text-[9px] font-bold uppercase tracking-wider text-red-500">{error}</p>
+                      )}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">Address Line 1</label>
+                          <input 
+                            required
+                            type="text" 
+                            value={newAddress.address1}
+                            onChange={(e) => setNewAddress({...newAddress, address1: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="Street address, P.O. box"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">Address Line 2 (Opt)</label>
+                          <input 
+                            type="text" 
+                            value={newAddress.address2}
+                            onChange={(e) => setNewAddress({...newAddress, address2: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="Apartment, suite, unit, etc."
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">City</label>
+                          <input 
+                            required
+                            type="text" 
+                            value={newAddress.city}
+                            onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="City"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">State / Province</label>
+                          <input 
+                            required
+                            type="text" 
+                            value={newAddress.province}
+                            onChange={(e) => setNewAddress({...newAddress, province: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="State"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">Zip / Postal Code</label>
+                          <input 
+                            required
+                            type="text" 
+                            value={newAddress.zip}
+                            onChange={(e) => setNewAddress({...newAddress, zip: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="Zip code"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[8px] font-bold uppercase tracking-widest text-black/30">Phone Number</label>
+                          <input 
+                            type="text" 
+                            value={newAddress.phone}
+                            onChange={(e) => setNewAddress({...newAddress, phone: e.target.value})}
+                            className="w-full border-b border-black/10 py-1 text-xs focus:border-black outline-none transition-colors bg-transparent text-black"
+                            placeholder="Phone number"
+                          />
+                        </div>
+                      </div>
+                      
+                      <button 
+                        disabled={isSyncing}
+                        className="w-full bg-black text-white py-3 rounded-xl text-[9px] font-bold uppercase tracking-[0.2em] flex items-center justify-center gap-2 hover:bg-black/80 transition-all shadow-sm"
+                      >
+                        {isSyncing ? <Loader2 size={12} className="animate-spin" /> : <Check size={14} />}
+                        Save Address
+                      </button>
+                    </form>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="space-y-4">
+                {user.addresses && user.addresses.length > 0 ? (
+                  user.addresses.map((address, idx) => (
+                    <motion.div 
+                      key={address.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.1 }}
+                      className="bg-[#f9f9fa] rounded-[20px] p-5 border border-black/5 flex items-start justify-between group"
+                    >
+                      <div className="flex gap-4">
+                        <div className="mt-1">
+                          <Building2 size={16} className="text-black/20" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-bold text-black tracking-wide">{address.address1}</p>
+                          {address.address2 && <p className="text-[10px] font-medium text-black/60">{address.address2}</p>}
+                          <p className="text-[10px] font-medium text-black/60">{address.city}, {address.province} {address.zip}</p>
+                          <p className="text-[10px] font-medium text-black/60 uppercase tracking-widest">{address.country}</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  !isAddingAddress && (
+                    <div className="bg-[#f9f9fa] rounded-[20px] p-6 border border-black/5 border-dashed flex flex-col items-center justify-center text-center">
+                       <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm">
+                          <MapPin size={14} className="text-black/10" />
+                       </div>
+                       <p className="text-[9px] font-bold uppercase tracking-widest text-black/30 mb-0.5">No addresses added</p>
+                       <p className="text-[8px] font-medium text-black/10 max-w-[150px]">Provide a shipping destination for swifter checkout.</p>
+                    </div>
+                  )
+                )}
               </div>
             </motion.div>
           </div>

@@ -1,10 +1,22 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { type Product } from './data';
-import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover, customerUpdate } from './shopify';
+import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover, customerUpdate, customerAddressCreate } from './shopify';
 import { signOut } from 'next-auth/react';
 
+export type Address = {
+  id: string;
+  address1: string;
+  address2?: string;
+  city: string;
+  province?: string;
+  country: string;
+  zip: string;
+  phone?: string;
+};
+
 export type CartItem = {
+
   product: Product;
   size: string;
   quantity: number;
@@ -27,7 +39,7 @@ interface CartState {
   toggleWishlist: (product: Product) => void;
 
   isLoggedIn: boolean;
-  user: { email: string; firstName?: string; lastName?: string } | null;
+  user: { email: string; firstName?: string; lastName?: string; addresses?: Address[] } | null;
   customerId: string | null;
   accessToken: string | null;
   isSyncing: boolean;
@@ -38,6 +50,7 @@ interface CartState {
   syncData: (merge?: boolean) => Promise<void>;
   saveData: () => Promise<void>;
   updateUser: (firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
+  addAddress: (address: any) => Promise<{ success: boolean; error?: string }>;
 
   wishlistPopupProduct: Product | null;
   clearWishlistPopup: () => void;
@@ -126,7 +139,8 @@ export const useCartStore = create<CartState>()(
                 user: {
                   email: customer.email,
                   firstName: customer.firstName,
-                  lastName: customer.lastName
+                  lastName: customer.lastName,
+                  addresses: customer.addresses?.edges.map((e: any) => e.node) || []
                 },
                 customerId: customer.id,
                 accessToken: token,
@@ -221,6 +235,35 @@ export const useCartStore = create<CartState>()(
           return { success: false, error: "An unexpected error occurred" };
         }
       },
+
+      addAddress: async (address) => {
+        const { accessToken, user } = get();
+        if (!accessToken || !user) return { success: false, error: "Not authenticated" };
+        
+        set({ isSyncing: true });
+        try {
+          const result = await customerAddressCreate(accessToken, address);
+          if (result?.customerAddress) {
+            set({
+              user: {
+                ...user,
+                addresses: [...(user.addresses || []), result.customerAddress]
+              },
+              isSyncing: false
+            });
+            return { success: true };
+          }
+          set({ isSyncing: false });
+          return {
+            success: false,
+            error: result?.customerUserErrors?.[0]?.message || "Failed to add address"
+          };
+        } catch (error) {
+          set({ isSyncing: false });
+          return { success: false, error: "An unexpected error occurred" };
+        }
+      },
+
 
       logout: () => {
         // 1. Clear local store state IMMEDIATELY for instant UI feedback

@@ -469,6 +469,20 @@ export async function getCustomer(accessToken: string) {
         lastName
         email
         phone
+        addresses(first: 10) {
+          edges {
+            node {
+              id
+              address1
+              address2
+              city
+              province
+              country
+              zip
+              phone
+            }
+          }
+        }
       }
     }
   `;
