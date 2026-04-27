@@ -1,33 +1,76 @@
 import { NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import { syncWishlist, getWishlist, getAdminToken } from '@/app/actions/shopify';
 
-// Move DB to temp folder to prevent Next.js rebuild loops in development
-const DB_PATH = path.join(os.tmpdir(), 'colin-guest-sync-db.json');
+const domain = process.env.NEXT_PUBLIC_SHOPIFY_STORE_DOMAIN;
 
-// Helper to read DB
-function readDB() {
+// Helper to get customer data from Shopify Metafields
+async function getShopifySyncData(customerId: string) {
   try {
-    if (!fs.existsSync(DB_PATH)) {
-      console.log('Sync DB: File does not exist, initializing empty.');
-      return {};
-    }
-    const data = fs.readFileSync(DB_PATH, 'utf8');
-    return JSON.parse(data);
+    const adminToken = await getAdminToken();
+    const query = `
+      query {
+        customer(id: "${customerId}") {
+          wishlist: metafield(namespace: "custom", key: "wishlist") { value }
+          cart: metafield(namespace: "custom", key: "cart") { value }
+        }
+      }
+    `;
+
+    const response = await fetch(`https://${domain}/admin/api/2024-01/graphql.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': adminToken },
+      body: JSON.stringify({ query }),
+    });
+
+    const data = await response.json();
+    const wishlist = data.data?.customer?.wishlist?.value;
+    const cart = data.data?.customer?.cart?.value;
+
+    return {
+      wishlist: wishlist ? JSON.parse(wishlist) : [],
+      cart: cart ? JSON.parse(cart) : []
+    };
   } catch (error) {
-    console.error('Sync DB: Read Error:', error);
-    return {};
+    console.error("Shopify Sync GET Error:", error);
+    return { wishlist: [], cart: [] };
   }
 }
 
-// Helper to write DB
-function writeDB(data: any) {
+// Helper to save customer data to Shopify Metafields
+async function saveShopifySyncData(customerId: string, wishlist: any[], cart: any[]) {
   try {
-    fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-    console.log('Sync DB: Successfully written to disk.');
+    const adminToken = await getAdminToken();
+    const mutation = `
+      mutation customerUpdate($input: CustomerInput!) {
+        customerUpdate(input: $input) {
+          customer { id }
+          userErrors { message }
+        }
+      }
+    `;
+
+    const response = await fetch(`https://${domain}/admin/api/2024-01/graphql.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': adminToken },
+      body: JSON.stringify({
+        query: mutation,
+        variables: {
+          input: {
+            id: customerId,
+            metafields: [
+              { namespace: "custom", key: "wishlist", value: JSON.stringify(wishlist), type: "json" },
+              { namespace: "custom", key: "cart", value: JSON.stringify(cart), type: "json" }
+            ]
+          }
+        }
+      }),
+    });
+
+    const data = await response.json();
+    return data.data?.customerUpdate?.userErrors?.length === 0;
   } catch (error) {
-    console.error('Sync DB: Write Error:', error);
+    console.error("Shopify Sync POST Error:", error);
+    return false;
   }
 }
 
@@ -36,23 +79,13 @@ export async function POST(request: Request) {
     const { customerId, wishlist, cart } = await request.json();
 
     if (!customerId) {
-      console.error('Sync POST: Missing customerId in request body');
       return NextResponse.json({ error: 'Missing customerId' }, { status: 400 });
     }
 
-    const db = readDB();
-    db[customerId] = {
-      wishlist: wishlist || [],
-      cart: cart || [],
-      updatedAt: new Date().toISOString()
-    };
+    const success = await saveShopifySyncData(customerId, wishlist, cart);
     
-    writeDB(db);
-
-    console.log(`Sync POST: Saved data for ${customerId} (${(wishlist || []).length} items)`);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success });
   } catch (error: any) {
-    console.error('Sync POST: Catch Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
@@ -63,17 +96,12 @@ export async function GET(request: Request) {
     const customerId = searchParams.get('customerId');
 
     if (!customerId) {
-      console.error('Sync GET: Missing customerId in query params');
       return NextResponse.json({ error: 'Missing customerId' }, { status: 400 });
     }
 
-    const db = readDB();
-    const userData = db[customerId] || { wishlist: [], cart: [] };
-
-    console.log(`Sync GET: Retrieved data for ${customerId}: ${userData.wishlist.length} wishlist items`);
+    const userData = await getShopifySyncData(customerId);
     return NextResponse.json(userData);
   } catch (error: any) {
-    console.error('Sync GET: Catch Error:', error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

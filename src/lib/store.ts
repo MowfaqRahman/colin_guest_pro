@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware';
 import { type Product } from './data';
 import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover, customerUpdate, customerAddressCreate } from './shopify';
 import { signOut } from 'next-auth/react';
-import { adminAddAddress } from '@/app/actions/shopify';
+import { adminAddAddress, syncWishlist, getWishlist } from '@/app/actions/shopify';
+
 
 
 export type Address = {

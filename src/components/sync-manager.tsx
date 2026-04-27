@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/lib/store";
 import { useSession } from "next-auth/react";
+import { getOrCreateShopifyCustomer } from "@/app/actions/shopify";
+
 
 export function SyncManager() {
   const { isLoggedIn, syncData, isSyncing, customerId, hasLoggedOut } = useCartStore();
@@ -12,17 +14,21 @@ export function SyncManager() {
     // If user is logged in via Google but not in our store, sync them
     // ONLY if they haven't explicitly logged out in this session
     if (status === "authenticated" && session?.user && !isLoggedIn && !hasLoggedOut) {
-      useCartStore.setState({
-        isLoggedIn: true,
-        user: {
-          email: session.user.email || "",
-          firstName: session.user.name?.split(" ")[0] || "",
-          lastName: session.user.name?.split(" ").slice(1).join(" ") || "",
-        },
-        customerId: `google-${session.user.email}`,
-        hasLoggedOut: false
+      const email = session.user.email || "";
+      const firstName = session.user.name?.split(" ")[0] || "";
+      const lastName = session.user.name?.split(" ").slice(1).join(" ") || "";
+
+      // Resolve real Shopify ID for Google users
+      getOrCreateShopifyCustomer(email, firstName, lastName).then(result => {
+        useCartStore.setState({
+          isLoggedIn: true,
+          user: { email, firstName, lastName },
+          customerId: result.customerId || `google-${email}`, // Fallback if admin API fails
+          hasLoggedOut: false
+        });
       });
     }
+
   }, [status, session, isLoggedIn, hasLoggedOut]);
 
   useEffect(() => {
