@@ -210,6 +210,59 @@ export async function getOrCreateShopifyCustomer(email: string, firstName: strin
   }
 }
 
+export async function adminGetCustomerData(email: string) {
+  if (!domain || !clientId || !clientSecret) return { success: false };
+
+  try {
+    const adminToken = await getAdminToken();
+    const query = `
+      query {
+        customers(first: 1, query: "email:${email}") {
+          edges {
+            node {
+              id
+              firstName
+              lastName
+              addresses(first: 10) {
+                id
+                address1
+                address2
+                city
+                province
+                country
+                zip
+                phone
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await fetch(`https://${domain}/admin/api/2024-01/graphql.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Shopify-Access-Token': adminToken },
+      body: JSON.stringify({ query }),
+    });
+
+    const data = await response.json();
+    const customer = data.data?.customers?.edges[0]?.node;
+
+    if (!customer) return { success: false };
+
+    return { 
+      success: true, 
+      addresses: customer.addresses || [],
+      firstName: customer.firstName,
+      lastName: customer.lastName
+    };
+  } catch (error) {
+    console.error("Admin Get Customer Data error:", error);
+    return { success: false };
+  }
+}
+
+
 export async function syncWishlist(email: string, productIds: string[]) {
 
   if (!domain || !clientId || !clientSecret) return { success: false };

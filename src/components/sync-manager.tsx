@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { useCartStore } from "@/lib/store";
 import { useSession } from "next-auth/react";
-import { getOrCreateShopifyCustomer } from "@/app/actions/shopify";
+import { getOrCreateShopifyCustomer, adminGetCustomerData } from "@/app/actions/shopify";
+
 
 
 export function SyncManager() {
@@ -18,16 +19,25 @@ export function SyncManager() {
       const firstName = session.user.name?.split(" ")[0] || "";
       const lastName = session.user.name?.split(" ").slice(1).join(" ") || "";
 
-      // Resolve real Shopify ID for Google users
-      getOrCreateShopifyCustomer(email, firstName, lastName).then(result => {
+      // Resolve real Shopify ID and Data for Google users
+      Promise.all([
+        getOrCreateShopifyCustomer(email, firstName, lastName),
+        adminGetCustomerData(email)
+      ]).then(([resolveResult, dataResult]) => {
         useCartStore.setState({
           isLoggedIn: true,
-          user: { email, firstName, lastName },
-          customerId: result.customerId || `google-${email}`, // Fallback if admin API fails
+          user: { 
+            email, 
+            firstName: dataResult.success ? dataResult.firstName : firstName, 
+            lastName: dataResult.success ? dataResult.lastName : lastName,
+            addresses: dataResult.success ? dataResult.addresses : []
+          },
+          customerId: resolveResult.customerId || `google-${email}`,
           hasLoggedOut: false
         });
       });
     }
+
 
   }, [status, session, isLoggedIn, hasLoggedOut]);
 

@@ -336,11 +336,12 @@ export const useCartStore = create<CartState>()(
                     id: p.id,
                     title: p.title,
                     price: `${p.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(p.priceRange.minVariantPrice.amount).toLocaleString()}`,
-                    src: p.images.edges[0]?.node.url || "",
+                    src: p.images[0]?.url || "",
                     desc: p.description,
                     category: p.productType,
                     handle: p.handle
                   }));
+
                 } else if (products && products.length === 0) {
                   // If Shopify specifically returned 0 nodes for existing IDs, 
                   // it might mean products were deleted, but we'll be cautious.
@@ -369,11 +370,12 @@ export const useCartStore = create<CartState>()(
                         id: product.id,
                         title: product.title,
                         price: `${product.priceRange.minVariantPrice.currencyCode === 'INR' ? 'RS. ' : '$'}${parseFloat(product.priceRange.minVariantPrice.amount).toLocaleString()}`,
-                        src: product.images.edges[0]?.node.url || "",
+                        src: product.images[0]?.url || "",
                         desc: product.description,
                         category: product.productType,
                         handle: product.handle
                       },
+
                       size: item.size,
                       quantity: item.quantity,
                       id: `${product.id}-${item.size}`
