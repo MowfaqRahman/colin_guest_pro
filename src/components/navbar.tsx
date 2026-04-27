@@ -190,8 +190,20 @@ export function Navbar() {
                     <div className="px-4 py-2 border-b border-white/10 mb-1">
                       <p className="text-[9px] font-bold uppercase tracking-widest opacity-50">Account</p>
                     </div>
-                    <Link href="/profile" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Profile</Link>
-                    <Link href="/orders" className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase">Orders</Link>
+                    <Link 
+                      href="/profile" 
+                      onClick={() => setIsAccountOpen(false)}
+                      className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase"
+                    >
+                      Profile
+                    </Link>
+                    <Link 
+                      href="/orders" 
+                      onClick={() => setIsAccountOpen(false)}
+                      className="block px-4 py-2.5 text-[11px] font-bold hover:bg-black/5 transition-colors tracking-widest uppercase"
+                    >
+                      Orders
+                    </Link>
                     <div className="h-[1px] bg-black/5 my-1" />
                     <button
                       onClick={() => {
