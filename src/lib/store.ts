@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware';
 import { type Product } from './data';
 import { customerLogin, getCustomer, getProductsByIds, customerCreate, customerRecover, customerUpdate, customerAddressCreate } from './shopify';
 import { signOut } from 'next-auth/react';
+import { adminAddAddress } from '@/app/actions/shopify';
+
 
 export type Address = {
   id: string;
@@ -240,34 +242,52 @@ export const useCartStore = create<CartState>()(
         const { accessToken, user } = get();
         
         if (!user) return { success: false, error: "No user session found." };
-        if (!accessToken) {
-          return { 
-            success: false, 
-            error: "Google users must link a Shopify account (or sign in via email) to manage persistent addresses." 
-          };
-        }
         
         set({ isSyncing: true });
+
+        // If we have an accessToken (Email login), use Storefront API
+        if (accessToken) {
+          try {
+            const result = await customerAddressCreate(accessToken, address);
+            if (result?.customerAddress) {
+              set({
+                user: {
+                  ...user,
+                  addresses: [...(user.addresses || []), result.customerAddress]
+                },
+                isSyncing: false
+              });
+              return { success: true };
+            }
+            set({ isSyncing: false });
+            return {
+              success: false,
+              error: result?.customerUserErrors?.[0]?.message || "Failed to add address"
+            };
+          } catch (error) {
+            set({ isSyncing: false });
+            return { success: false, error: "An unexpected error occurred" };
+          }
+        } 
+        
+        // If we DON'T have an accessToken (Google login), use Admin API via Server Action
         try {
-          const result = await customerAddressCreate(accessToken, address);
-          if (result?.customerAddress) {
+          const result = await adminAddAddress(user.email, address);
+          if (result.success) {
             set({
               user: {
                 ...user,
-                addresses: [...(user.addresses || []), result.customerAddress]
+                addresses: [...(user.addresses || []), result.address]
               },
               isSyncing: false
             });
             return { success: true };
           }
           set({ isSyncing: false });
-          return {
-            success: false,
-            error: result?.customerUserErrors?.[0]?.message || "Failed to add address"
-          };
+          return { success: false, error: result.error };
         } catch (error) {
           set({ isSyncing: false });
-          return { success: false, error: "An unexpected error occurred" };
+          return { success: false, error: "An unexpected error occurred during Admin sync" };
         }
       },
 

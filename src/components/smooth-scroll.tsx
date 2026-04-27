@@ -10,7 +10,7 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Disable Lenis on the landing page to prevent conflict with snap physics
-    if (pathname === "/") {
+    if (pathname === "/" || pathname === "/profile") {
       if (lenisRef.current) {
         lenisRef.current.destroy();
         lenisRef.current = null;
