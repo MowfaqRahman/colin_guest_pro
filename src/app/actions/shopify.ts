@@ -19,9 +19,16 @@ async function getAdminToken() {
     }),
   });
 
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Token exchange failed:", errorText);
+    throw new Error(`Token exchange failed: ${response.status} ${errorText}`);
+  }
+
   const data = await response.json();
   return data.access_token;
 }
+
 
 export async function adminAddAddress(email: string, address: any) {
   if (!domain || !clientId || !clientSecret) {
@@ -112,8 +119,9 @@ export async function adminAddAddress(email: string, address: any) {
       address: addData.data?.customerUpdate?.customer?.addresses?.slice(-1)[0] 
     };
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Admin API error:", error);
-    return { success: false, error: "Internal server error connecting to Shopify Admin." };
+    return { success: false, error: `Shopify Error: ${error.message || "Internal server error"}` };
   }
+
 }
