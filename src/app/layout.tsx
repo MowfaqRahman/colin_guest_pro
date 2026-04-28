@@ -4,7 +4,10 @@ import "./globals.css";
 import { CartDrawer } from "@/components/cart-drawer";
 import { WishlistPopup } from "@/components/wishlist-popup";
 import { Navbar } from "@/components/navbar";
+import { MobileNavbar } from "@/components/mobile/mobile-navbar";
+
 import { Footer } from "@/components/footer";
+
 import { SmoothScroll } from "@/components/smooth-scroll";
 import { SyncManager } from "@/components/sync-manager";
 
@@ -39,10 +42,24 @@ export default function RootLayout({
       <body className="antialiased">
         <SessionProvider>
           <SmoothScroll>
-            <Navbar />
+            {/* Desktop Navbar - Strict Isolation */}
+            <div className="hidden md:block">
+              <Navbar />
+            </div>
+            
+            {/* Mobile Navbar - Strict Isolation */}
+            <div className="block md:hidden">
+              <MobileNavbar />
+            </div>
+
             {children}
-            <Footer />
+            
+            {/* Footer Isolation if needed, but for now wrap the desktop footer */}
+            <div className="hidden md:block">
+              <Footer />
+            </div>
           </SmoothScroll>
+
           <CartDrawer />
           <WishlistPopup />
           <SyncManager />

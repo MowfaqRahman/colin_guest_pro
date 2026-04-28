@@ -3,8 +3,9 @@ import { ProductCard } from "@/components/product-card";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Product, Collection } from "@/lib/data";
-
 import CategoryClient from "@/components/category-client";
+import { MobileCollectionClient } from "@/components/mobile/mobile-collection-client";
+
 
 export default async function CategoryGrid({ params }: { params: Promise<{ category: string }> }) {
   const { category } = await params;
@@ -62,13 +63,27 @@ export default async function CategoryGrid({ params }: { params: Promise<{ categ
   const formattedCategory = category.toLowerCase() === 'all' ? 'ALL PRODUCTS' : category.split('-').join(' ');
 
   return (
-    <main className="min-h-screen bg-white text-black font-sans relative">
-      <CategoryClient 
-        category={category}
-        formattedCategory={formattedCategory}
-        displayProducts={displayProducts}
-        collections={collections}
-      />
-    </main>
+    <>
+      {/* Desktop View - Strict Isolation */}
+      <div className="hidden md:block min-h-screen bg-white text-black font-sans relative">
+        <CategoryClient 
+          category={category}
+          formattedCategory={formattedCategory}
+          displayProducts={displayProducts}
+          collections={collections}
+        />
+      </div>
+
+      {/* Mobile View - Strict Isolation */}
+      <div className="block md:hidden min-h-screen bg-[#f4f4f4]">
+        <MobileCollectionClient
+          category={category}
+          formattedCategory={formattedCategory}
+          displayProducts={displayProducts}
+          collections={collections}
+        />
+      </div>
+    </>
   );
 }
+

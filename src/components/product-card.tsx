@@ -40,12 +40,12 @@ export function ProductCard({
   return (
     <div className="group flex flex-col relative" onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <motion.div 
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 1, y: 0 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-50px" }}
+        viewport={{ once: true, amount: 0.1 }}
         transition={{ 
           duration: 0.8,
-          delay: index % 4 * 0.1, // Stagger based on column position
+          delay: index % 4 * 0.1, 
           ease: "easeOut"
         } as any}
         className="relative w-full aspect-[4/5] bg-[#f8f8f8] rounded-[24px] mb-3 overflow-hidden flex items-center justify-center p-0 border border-black/5 group-hover:shadow-md transition-shadow duration-500"

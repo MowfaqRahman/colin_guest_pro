@@ -111,7 +111,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ease-out ${getNavStyles()}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-700 ease-out hidden md:block ${getNavStyles()}`}>
       <div className={`grid grid-cols-3 items-center px-8 h-[72px] ${isSearchOpen && !isAboutPage ? "bg-white" : ""} ${isAboutPage ? "text-white" : "text-black"}`}>
         {/* LEFT: Branding */}
         <div className="flex justify-start">
