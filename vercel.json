@@ -4,7 +4,8 @@
   "experimentalServices": {
     "main": {
       "type": "web",
-      "root": "./"
+      "root": "./",
+      "mount": "/"
     }
   }
 }
