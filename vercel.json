@@ -2,7 +2,7 @@
   "experimentalServices": {
     "web": {
       "framework": "nextjs",
-      "mount": "."
+      "routePrefix": "/"
     }
   }
 }
