@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,9 +22,9 @@ export default function LookbookClient({ products }: LookbookClientProps) {
   
   return (
     <main ref={containerRef} className="bg-[#f9f9fa] text-black font-sans relative h-screen overflow-y-scroll snap-y snap-mandatory hide-scrollbar">
-      <div className="flex w-full pt-20 relative">
+      <div className="flex w-full pt-20 relative flex-col md:flex-row">
         {/* LEFT/CENTER: Sticky Carousel */}
-        <div className="w-[75%] sticky top-20 h-[calc(100vh-5rem)] flex items-center justify-center z-10 overflow-hidden">
+        <div className="w-full md:w-[75%] sticky top-20 h-[50vh] md:h-[calc(100vh-5rem)] flex items-center justify-center z-10 overflow-hidden bg-[#f9f9fa]">
           <div className="relative w-full h-[85%] flex items-center justify-center">
              {repeatedProducts.map((model, index) => (
                 <ScrollModel 
@@ -39,7 +39,7 @@ export default function LookbookClient({ products }: LookbookClientProps) {
         </div>
 
         {/* RIGHT: Synchronized Scrollable Column */}
-        <div className="w-[25%] bg-white border-l border-black/5 relative z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.03)]">
+        <div className="w-full md:w-[25%] bg-white border-l border-black/5 relative z-30 shadow-[-10px_0_30px_rgba(0,0,0,0.03)]">
            <div className="flex flex-col">
               {repeatedProducts.map((listModel, index) => (
                 <div key={`sidebar-${listModel.id}-${index}`} className="min-h-screen p-6 border-b border-black/5 flex flex-col justify-center items-center group snap-start snap-always">
@@ -109,7 +109,7 @@ function ScrollModel({ model, index, total, progress }: any) {
       }}
       className="absolute top-0 bottom-0 left-0 right-0 flex items-center justify-center pointer-events-none"
     >
-      <div className="relative w-full h-[85vh] max-w-[80vw]">
+      <div className="relative w-full h-[40vh] md:h-[85vh] max-w-[80vw]">
         <Image 
           src={model.src} 
           alt={model.title} 

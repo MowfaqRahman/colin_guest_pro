@@ -1,8 +1,7 @@
 import { getCollectionProducts, getAllProducts } from "@/lib/shopify";
 // Force Redeploy: 2026-04-24T00:50:12Z
 import { Product } from "@/lib/data";
-import LookbookClient from "@/components/lookbook-client";
-import { MobileHomeClient } from "@/components/mobile/mobile-home-client";
+import HomePageClient from "@/components/home-page-client";
 
 
 export default async function Home() {
@@ -29,17 +28,7 @@ export default async function Home() {
   }));
 
   return (
-    <>
-      {/* Desktop View - Strict Isolation */}
-      <div className="hidden md:block">
-        <LookbookClient products={displayProducts} />
-      </div>
-
-      {/* Mobile View - Strict Isolation */}
-      <div className="block md:hidden">
-        <MobileHomeClient products={displayProducts} />
-      </div>
-    </>
+    <HomePageClient products={displayProducts} />
   );
 }
 
