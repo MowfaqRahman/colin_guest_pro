@@ -1,11 +1,8 @@
 {
-  "experimentalServices": [
-    {
-      "name": "web",
+  "experimentalServices": {
+    "web": {
       "path": ".",
-      "config": {
-        "framework": "nextjs"
-      }
+      "framework": "nextjs"
     }
-  ]
+  }
 }
