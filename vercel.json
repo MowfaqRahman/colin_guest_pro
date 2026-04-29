@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "framework": "nextjs",
   "experimentalServices": {
     "main": {
       "type": "web",
+      "framework": "nextjs",
       "root": "./",
       "mount": "/"
     }
