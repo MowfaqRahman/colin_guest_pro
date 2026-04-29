@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,37 +12,40 @@ interface MobileLookbookProps {
 
 export default function MobileLookbook({ products }: MobileLookbookProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // We'll use a higher number of items to make the scroll feel long
+  // Use 3 sets for true infinite-feeling scroll
   const repeatedProducts = [...products, ...products, ...products];
 
   const { scrollXProgress } = useScroll({
     container: scrollRef,
   });
 
-  // Premium spring settings: highly responsive yet buttery smooth
   const smoothProgress = useSpring(scrollXProgress, {
-    stiffness: 200, // Increased for a more "connected" feel
-    damping: 30,    // Balanced for a high-end weighted feel
-    mass: 0.5,      // Lower mass for faster response
+    stiffness: 180,
+    damping: 28,
+    mass: 0.6,
     restDelta: 0.0001
   });
 
-  // Initial scroll to the middle set of products for an "infinite" feel
   useEffect(() => {
+    setIsMounted(true);
     if (scrollRef.current && products.length > 0) {
-      const startOfSecondSet = products.length * window.innerWidth;
-      scrollRef.current.scrollLeft = startOfSecondSet;
+      // Start at the beginning of the second set
+      const itemWidth = window.innerWidth;
+      scrollRef.current.scrollLeft = products.length * itemWidth;
     }
   }, [products.length]);
 
+  if (!isMounted) return <div className="fixed inset-0 bg-[#f9f9fa]" />;
+
   return (
-    <div className="fixed inset-0 bg-[#f9f9fa] flex flex-col overflow-hidden font-sans select-none">
+    <div className="fixed inset-0 bg-[#f9f9fa] flex flex-col overflow-hidden font-sans select-none safe-bottom">
       {/* Header */}
-      <header className="h-[64px] flex items-center justify-between px-6 shrink-0 bg-[#f9f9fa] border-b border-black/[0.03] z-50">
+      <header className="h-[64px] flex items-center justify-between px-6 shrink-0 bg-[#f9f9fa] border-b border-black/[0.04] z-50 pt-[env(safe-area-inset-top)] box-content">
         <div className="w-10 flex items-center justify-start">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
-            <path d="M4 7h16M4 12h16M4 17h16" />
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
+            <path d="M4 8h16M4 16h16" />
           </svg>
         </div>
 
@@ -57,10 +60,10 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
         </div>
 
         <div className="flex items-center gap-5 w-20 justify-end">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
             <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.1">
             <path d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
         </div>
@@ -68,10 +71,15 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
 
       {/* Main Container */}
       <div className="flex-1 relative overflow-hidden">
-        {/* 1. The Animated Content Layer (Behind the scrollable layer) */}
+        {/* Background "N" Icon */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none select-none z-0">
+          <span className="text-[40vh] font-serif font-light">N</span>
+        </div>
+
+        {/* 1. The Animated Content Layer */}
         <div className="absolute inset-0 z-10 pointer-events-none flex flex-col">
           {/* Top: Animated Images */}
-          <div className="h-[65%] relative flex items-center justify-center overflow-hidden">
+          <div className="h-[62%] relative flex items-center justify-center overflow-hidden">
             {repeatedProducts.map((product, index) => (
               <HeroModel
                 key={`hero-${index}`}
@@ -79,12 +87,13 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
                 index={index}
                 total={repeatedProducts.length}
                 progress={smoothProgress}
+                baseCount={products.length}
               />
             ))}
           </div>
 
           {/* Bottom: Animated Text */}
-          <div className="h-[35%] bg-white relative flex items-center justify-center overflow-hidden">
+          <div className="h-[38%] bg-white relative flex flex-col items-center justify-start overflow-hidden shadow-[0_-10px_30px_rgba(0,0,0,0.02)]">
             {repeatedProducts.map((product, index) => (
               <HeroText
                 key={`text-${index}`}
@@ -108,15 +117,11 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
                 key={`scroll-item-${index}`}
                 className="w-screen h-full flex flex-col snap-center snap-always flex-shrink-0"
               >
-                {/* Upper part for swiping only */}
-                <div className="h-[65%] w-full" />
-
-                {/* Lower part contains the actual clickable Link */}
+                <div className="h-[62%] w-full" />
                 <Link 
                   href={`/product/${encodeURIComponent(product.id)}`}
-                  className="h-[35%] w-full flex items-center justify-center active:bg-black/[0.02] transition-colors"
+                  className="h-[38%] w-full"
                 >
-                  {/* The actual text is rendered in the layer below, this is just the hit area */}
                   <span className="sr-only">View {product.title}</span>
                 </Link>
               </div>
@@ -137,16 +142,32 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
         
         body {
           font-family: 'Inter', sans-serif;
+          background-color: #f9f9fa;
         }
         .font-serif {
           font-family: 'Playfair Display', serif;
+        }
+        .safe-bottom {
+          padding-bottom: env(safe-area-inset-bottom);
         }
       `}</style>
     </div>
   );
 }
 
-function HeroModel({ product, index, total, progress }: { product: Product, index: number, total: number, progress: any }) {
+function HeroModel({ 
+  product, 
+  index, 
+  total, 
+  progress, 
+  baseCount 
+}: { 
+  product: Product, 
+  index: number, 
+  total: number, 
+  progress: any,
+  baseCount: number
+}) {
   const activeIndex = useTransform(progress, [0, 1], [0, total - 1]);
   const relativeIndex = useTransform(activeIndex, (v) => index - v);
 
@@ -158,23 +179,26 @@ function HeroModel({ product, index, total, progress }: { product: Product, inde
 
   const opacity = useTransform(
     relativeIndex,
-    [-2.5, -2, -1, 0, 1, 2, 2.5],
-    [0, 0.2, 0.5, 1, 0.5, 0.2, 0]
+    [-2.2, -1, 0, 1, 2.2],
+    [0, 0.45, 1, 0.45, 0]
   );
 
   const x = useTransform(
     relativeIndex,
     [-2, -1, 0, 1, 2],
-    ["-130%", "-70%", "0%", "70%", "130%"]
+    ["-140%", "-72%", "0%", "72%", "140%"]
   );
 
   const filter = useTransform(
     relativeIndex,
     [-1, 0, 1],
-    ["grayscale(30%) blur(1px)", "grayscale(0%) blur(0px)", "grayscale(30%) blur(1px)"]
+    ["grayscale(20%) blur(1.5px)", "grayscale(0%) blur(0px)", "grayscale(20%) blur(1.5px)"]
   );
 
   const zIndex = useTransform(relativeIndex, (v) => Math.round(100 - Math.abs(v) * 20));
+
+  // Priority for middle set (the starting set)
+  const isPriority = index >= baseCount && index < baseCount + 3;
 
   return (
     <motion.div
@@ -187,15 +211,16 @@ function HeroModel({ product, index, total, progress }: { product: Product, inde
         position: "absolute",
         transformOrigin: "center center",
       }}
-      className="w-[75vw] h-full flex items-center justify-center pointer-events-none"
+      className="w-[78vw] h-full flex items-center justify-center pointer-events-none"
     >
-      <div className="relative w-full h-[85%] drop-shadow-[0_15px_40px_rgba(0,0,0,0.08)]">
+      <div className="relative w-full h-[90%] drop-shadow-[0_20px_50px_rgba(0,0,0,0.06)]">
         <Image
           src={product.src}
           alt={product.title}
           fill
           className="object-contain"
-          priority={index < 5}
+          priority={isPriority}
+          sizes="78vw"
         />
       </div>
     </motion.div>
@@ -206,10 +231,9 @@ function HeroText({ product, index, total, progress }: { product: Product, index
   const activeIndex = useTransform(progress, [0, 1], [0, total - 1]);
   const relativeIndex = useTransform(activeIndex, (v) => index - v);
 
-  // Fade and slight slide for the text
   const opacity = useTransform(
     relativeIndex,
-    [-0.8, -0.4, 0, 0.4, 0.8],
+    [-0.7, -0.4, 0, 0.4, 0.7],
     [0, 1, 1, 1, 0]
   );
 
@@ -219,11 +243,10 @@ function HeroText({ product, index, total, progress }: { product: Product, index
     ["-100%", "0%", "100%"]
   );
 
-  // Subtle y-parallax
   const y = useTransform(
     relativeIndex,
     [-1, 0, 1],
-    [10, 0, 10]
+    [15, 0, 15]
   );
 
   return (
@@ -238,19 +261,29 @@ function HeroText({ product, index, total, progress }: { product: Product, index
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "flex-start",
-        padding: "0 40px",
-        paddingTop: "24px"
+        padding: "0 32px",
+        paddingTop: "32px"
       }}
       className="pointer-events-none"
     >
-      <h2 className="text-[13px] font-bold uppercase tracking-[0.25em] text-black mb-2 text-center leading-tight">
+      <h2 className="text-[14px] font-bold uppercase tracking-[0.3em] text-black mb-2 text-center leading-tight">
         {product.title}
       </h2>
-      <p className="text-[10px] font-medium text-[#8E8E8E] text-center leading-[1.6] mb-3 max-w-[260px] line-clamp-2">
+      <p className="text-[11px] font-medium text-[#8E8E8E] text-center leading-[1.7] mb-4 max-w-[280px] line-clamp-2">
         {product.desc}
       </p>
-      <div className="text-[14px] font-bold tracking-[0.2em] text-black uppercase">
+      <div className="text-[16px] font-bold tracking-[0.1em] text-black uppercase mb-6">
         {product.price}
+      </div>
+      
+      {/* Shop The Look Button */}
+      <div className="mt-auto pb-8">
+        <div className="border border-black px-10 py-3 text-[10px] font-bold tracking-[0.25em] uppercase hover:bg-black hover:text-white transition-all duration-300 flex items-center gap-3 active:scale-95">
+          Shop The Look
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </div>
       </div>
     </motion.div>
   );
