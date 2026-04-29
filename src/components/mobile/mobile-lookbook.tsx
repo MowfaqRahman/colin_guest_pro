@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
+import { useRef, useEffect } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/data";
@@ -13,24 +13,33 @@ interface MobileLookbookProps {
 export default function MobileLookbook({ products }: MobileLookbookProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // We'll use a higher number of items to make the scroll feel infinite or at least long enough
+  // We'll use a higher number of items to make the scroll feel long
   const repeatedProducts = [...products, ...products, ...products];
 
   const { scrollXProgress } = useScroll({
     container: scrollRef,
   });
 
-  // Smooth out the scroll progress for animations
+  // Premium spring settings: highly responsive yet buttery smooth
   const smoothProgress = useSpring(scrollXProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
+    stiffness: 200, // Increased for a more "connected" feel
+    damping: 30,    // Balanced for a high-end weighted feel
+    mass: 0.5,      // Lower mass for faster response
+    restDelta: 0.0001
   });
+
+  // Initial scroll to the middle set of products for an "infinite" feel
+  useEffect(() => {
+    if (scrollRef.current && products.length > 0) {
+      const startOfSecondSet = products.length * window.innerWidth;
+      scrollRef.current.scrollLeft = startOfSecondSet;
+    }
+  }, [products.length]);
 
   return (
     <div className="fixed inset-0 bg-[#f9f9fa] flex flex-col overflow-hidden font-sans select-none">
       {/* Header */}
-      <header className="h-[64px] flex items-center justify-between px-6 shrink-0 bg-[#f9f9fa] border-b border-black/[0.03]">
+      <header className="h-[64px] flex items-center justify-between px-6 shrink-0 bg-[#f9f9fa] border-b border-black/[0.03] z-50">
         <div className="w-10 flex items-center justify-start">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
             <path d="M4 7h16M4 12h16M4 17h16" />
@@ -57,47 +66,12 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
         </div>
       </header>
 
-      {/* Main Container - Refactored for global scroll */}
+      {/* Main Container */}
       <div className="flex-1 relative overflow-hidden">
-        {/* 1. The Scrollable Layer (Captures touch/scroll anywhere) */}
-        <div
-          ref={scrollRef}
-          className="absolute inset-0 overflow-x-auto snap-x snap-mandatory hide-scrollbar z-20"
-        >
-          <div className="flex h-full" style={{ width: `${repeatedProducts.length * 100}vw` }}>
-            {repeatedProducts.map((product, index) => (
-              <div
-                key={`scroll-item-${index}`}
-                className="w-screen h-full flex flex-col snap-center flex-shrink-0"
-              >
-                {/* Top Spacer: Transparent touch area for images */}
-                <div className="h-[65%] w-full" />
-
-                {/* Bottom Content: Visible product details */}
-                <div className="h-[35%] w-full bg-white flex flex-col items-center justify-start px-10 pt-2">
-                  <Link 
-                    href={`/product/${encodeURIComponent(product.id)}`}
-                    className="flex flex-col items-center active:opacity-70 transition-opacity"
-                  >
-                    <h2 className="text-[13px] font-bold uppercase tracking-[0.2em] text-black mb-2 text-center leading-tight">
-                      {product.title}
-                    </h2>
-                    <p className="text-[10px] font-medium text-[#8E8E8E] text-center leading-[1.5] mb-2 max-w-[240px] line-clamp-2">
-                      {product.desc}
-                    </p>
-                    <div className="text-[14px] font-bold tracking-widest text-black uppercase">
-                      {product.price}
-                    </div>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* 2. The Animated Images Layer (Behind the scrollable layer) */}
-        <div className="absolute top-0 left-0 w-full h-[65%] z-10 pointer-events-none flex items-center justify-center overflow-hidden bg-[#f9f9fa]">
-          <div className="relative w-full h-full flex items-center justify-center">
+        {/* 1. The Animated Content Layer (Behind the scrollable layer) */}
+        <div className="absolute inset-0 z-10 pointer-events-none flex flex-col">
+          {/* Top: Animated Images */}
+          <div className="h-[65%] relative flex items-center justify-center overflow-hidden">
             {repeatedProducts.map((product, index) => (
               <HeroModel
                 key={`hero-${index}`}
@@ -106,6 +80,46 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
                 total={repeatedProducts.length}
                 progress={smoothProgress}
               />
+            ))}
+          </div>
+
+          {/* Bottom: Animated Text */}
+          <div className="h-[35%] bg-white relative flex items-center justify-center overflow-hidden">
+            {repeatedProducts.map((product, index) => (
+              <HeroText
+                key={`text-${index}`}
+                product={product}
+                index={index}
+                total={repeatedProducts.length}
+                progress={smoothProgress}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* 2. The Scrollable Gesture & Link Layer (On top) */}
+        <div
+          ref={scrollRef}
+          className="absolute inset-0 overflow-x-auto snap-x snap-mandatory hide-scrollbar z-30"
+        >
+          <div className="flex h-full" style={{ width: `${repeatedProducts.length * 100}vw` }}>
+            {repeatedProducts.map((product, index) => (
+              <div
+                key={`scroll-item-${index}`}
+                className="w-screen h-full flex flex-col snap-center snap-always flex-shrink-0"
+              >
+                {/* Upper part for swiping only */}
+                <div className="h-[65%] w-full" />
+
+                {/* Lower part contains the actual clickable Link */}
+                <Link 
+                  href={`/product/${encodeURIComponent(product.id)}`}
+                  className="h-[35%] w-full flex items-center justify-center active:bg-black/[0.02] transition-colors"
+                >
+                  {/* The actual text is rendered in the layer below, this is just the hit area */}
+                  <span className="sr-only">View {product.title}</span>
+                </Link>
+              </div>
             ))}
           </div>
         </div>
@@ -133,40 +147,34 @@ export default function MobileLookbook({ products }: MobileLookbookProps) {
 }
 
 function HeroModel({ product, index, total, progress }: { product: Product, index: number, total: number, progress: any }) {
-  // We need to map the scroll progress (0-1) to the current active index
   const activeIndex = useTransform(progress, [0, 1], [0, total - 1]);
   const relativeIndex = useTransform(activeIndex, (v) => index - v);
 
-  // Scaling: 1.2x at center (0), scales down to 0.7 at ±1, and 0.4 at ±2
   const scale = useTransform(
     relativeIndex,
     [-2, -1, 0, 1, 2],
-    [0.5, 0.9, 1.2, 0.9, 0.5]
+    [0.5, 0.85, 1.15, 0.85, 0.5]
   );
 
   const opacity = useTransform(
     relativeIndex,
     [-2.5, -2, -1, 0, 1, 2, 2.5],
-    [0, 0.3, 0.6, 1, 0.6, 0.3, 0]
+    [0, 0.2, 0.5, 1, 0.5, 0.2, 0]
   );
 
-  // x-offsets to keep them spaced out so only half of side models are visible
   const x = useTransform(
     relativeIndex,
     [-2, -1, 0, 1, 2],
-    ["-120%", "-65%", "0%", "65%", "120%"]
+    ["-130%", "-70%", "0%", "70%", "130%"]
   );
 
   const filter = useTransform(
     relativeIndex,
     [-1, 0, 1],
-    ["grayscale(40%) blur(1px)", "grayscale(0%) blur(0px)", "grayscale(40%) blur(1px)"]
+    ["grayscale(30%) blur(1px)", "grayscale(0%) blur(0px)", "grayscale(30%) blur(1px)"]
   );
 
-  const zIndex = useTransform(relativeIndex, (v) => {
-    const distance = Math.abs(v);
-    return Math.round(100 - distance * 20);
-  });
+  const zIndex = useTransform(relativeIndex, (v) => Math.round(100 - Math.abs(v) * 20));
 
   return (
     <motion.div
@@ -179,9 +187,9 @@ function HeroModel({ product, index, total, progress }: { product: Product, inde
         position: "absolute",
         transformOrigin: "center center",
       }}
-      className="w-[70vw] h-full flex items-center justify-center pointer-events-none"
+      className="w-[75vw] h-full flex items-center justify-center pointer-events-none"
     >
-      <div className="relative w-full h-full drop-shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+      <div className="relative w-full h-[85%] drop-shadow-[0_15px_40px_rgba(0,0,0,0.08)]">
         <Image
           src={product.src}
           alt={product.title}
@@ -189,6 +197,60 @@ function HeroModel({ product, index, total, progress }: { product: Product, inde
           className="object-contain"
           priority={index < 5}
         />
+      </div>
+    </motion.div>
+  );
+}
+
+function HeroText({ product, index, total, progress }: { product: Product, index: number, total: number, progress: any }) {
+  const activeIndex = useTransform(progress, [0, 1], [0, total - 1]);
+  const relativeIndex = useTransform(activeIndex, (v) => index - v);
+
+  // Fade and slight slide for the text
+  const opacity = useTransform(
+    relativeIndex,
+    [-0.8, -0.4, 0, 0.4, 0.8],
+    [0, 1, 1, 1, 0]
+  );
+
+  const x = useTransform(
+    relativeIndex,
+    [-1, 0, 1],
+    ["-100%", "0%", "100%"]
+  );
+
+  // Subtle y-parallax
+  const y = useTransform(
+    relativeIndex,
+    [-1, 0, 1],
+    [10, 0, 10]
+  );
+
+  return (
+    <motion.div
+      style={{
+        opacity,
+        x,
+        y,
+        position: "absolute",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        padding: "0 40px",
+        paddingTop: "24px"
+      }}
+      className="pointer-events-none"
+    >
+      <h2 className="text-[13px] font-bold uppercase tracking-[0.25em] text-black mb-2 text-center leading-tight">
+        {product.title}
+      </h2>
+      <p className="text-[10px] font-medium text-[#8E8E8E] text-center leading-[1.6] mb-3 max-w-[260px] line-clamp-2">
+        {product.desc}
+      </p>
+      <div className="text-[14px] font-bold tracking-[0.2em] text-black uppercase">
+        {product.price}
       </div>
     </motion.div>
   );
