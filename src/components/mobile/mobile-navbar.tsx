@@ -36,7 +36,7 @@ export function MobileNavbar() {
   return (
     <>
       {/* 1. TOP ICONS: Menu (Left), Logo (Center), Wishlist + Cart (Right) */}
-      <div className="fixed top-0 left-0 right-0 z-[100] bg-white shadow-sm h-[60px] safe-top px-5">
+      <div className="fixed top-0 left-0 right-0 z-[500] bg-white shadow-sm h-[60px] safe-top px-5">
         <div className="grid grid-cols-3 items-center h-full text-black w-full relative">
           
           {/* Left: Hamburger Menu (1/3 width) */}
@@ -125,13 +125,12 @@ export function MobileNavbar() {
             <User className="w-6 h-6" strokeWidth={1.5} />
           </Link>
         </div>
-
       </div>
 
 
       {/* 3. FULL SCREEN MENU DRAWER */}
       <div
-        className={`fixed inset-0 z-[150] bg-white transition-transform duration-500 ease-in-out ${
+        className={`fixed inset-0 z-[510] bg-white transition-transform duration-500 ease-in-out ${
           isOpen ? "translate-x-0 flex flex-col pointer-events-auto" : "-translate-x-full hidden pointer-events-none"
         }`}
       >

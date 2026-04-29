@@ -91,7 +91,7 @@ export function FilterDrawer({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/5 z-[100]"
+            className="fixed inset-0 bg-black/5 z-[400]"
           />
 
           {/* Drawer */}
@@ -100,7 +100,7 @@ export function FilterDrawer({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed right-0 top-[60px] h-[calc(100vh-60px)] w-full sm:w-[450px] bg-white/60 backdrop-blur-3xl z-[101] shadow-2xl flex flex-col border-l border-black/5"
+            className="fixed right-0 top-[60px] h-[calc(100vh-60px)] w-full sm:w-[450px] bg-white/60 backdrop-blur-3xl z-[401] shadow-2xl flex flex-col border-l border-black/5"
           >
             {/* Header */}
             <div className="px-8 py-4 border-b border-black/5 flex justify-between items-center bg-transparent sticky top-0 z-10">
